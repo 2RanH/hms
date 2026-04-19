@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HSM</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+</head>
+    
+<body>
+
+    {% if user %}
+    <div class="header">
+        <div class="header-title">
+            Healthcare Service Management
+        </div>
+    
+        <div class="nav">
+            {% if user.role == "reception" %}
+                <a href="/reception">Baş səhifə</a>
+                <a href="/ui/reception/patients">Pasientlər</a>
+                <a href="/ui/reception/patients/create">Yeni pasienti əlavə et</a>
+                <a href="/ui/reception/costs">Xərclər</a>
+
+            {% endif %}
+    
+            {% if user.role == "admin" %}
+                <a href="/admin">Dashboard</a>
+                <a href="/ui/admin/users">Users</a>
+                <a href="/ui/admin/payments">Payments</a>
+                <a href="/ui/admin/audit-logs">Audit Logs</a>
+                <a href="/ui/admin/patients">Patients</a>
+            {% endif %}
+    
+            {% if user.role == "doctor" %}
+                <a href="/doctor">Baş səhifə </a>
+                <a href="/ui/doctor/patients">Mənim pasientlərim</a>
+                <a href="/ui/doctor/notifications">Bildirişlər</a>
+            {% endif %}
+    
+            <a href="/logout">Sistemdən çıxış</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    
+</body>
+    
+</html>

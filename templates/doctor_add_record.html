@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Tibbi məlumatları əlavə edin</h2>
+
+<p>Pasient: {{ patient.name }} {{ patient.surname }}</p>
+
+<form method="post">
+
+    <label>Tibbi qeydlər:<br>
+        <textarea name="note" rows="4" cols="60"></textarea>
+    </label><br><br>
+
+    <label>Diaqnoz:<br>
+        <textarea name="diagnosis" rows="4" cols="60"></textarea>
+    </label><br><br>
+
+    <label>Resept:<br>
+        <textarea name="prescription" rows="4" cols="60"></textarea>
+    </label><br><br>
+
+    <button type="submit">Yadda saxla</button>
+</form>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Pasienti digər həkimə təyin et</h2>
+
+<div class="card">
+    <div class="card-title">Həkimi dəyiş</div>
+
+    <form method="post" action="/ui/doctor/patients/{{ patient.id }}/reassign">
+        
+        <div style="margin-bottom: 14px;">
+            <label>Yeni həkim</label>
+            <select name="assigned_doctor_id">
+                {% for d in doctors %}
+                <option value="{{ d.id }}">{{ d.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button type="submit">Təyin et</button>
+            <a href="/ui/doctor/patients/{{ patient.id }}" class="btn-secondary">Ləğv et</a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Yeni pasient əlavə et</h2>
+
+<form method="post" action="/ui/reception/patients/create">
+
+    <div class="card">
+        <div class="card-title">Pasient haqqında məlumat</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Adı</div>
+                <input type="text" name="name" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Soyadı</div>
+                <input type="text" name="surname" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Ata adı</div>
+                <input type="text" name="father_name" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Doğum tarixi</div>
+                <input type="date" name="date_of_birth" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Cinsi</div>
+                <select name="gender" required>
+                    <option value="male">Kişi</option>
+                    <option value="female">Qadın</option>
+                </select>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <select name="status">
+                    <option value="İlk qəbul">İlk qəbul</option>
+                    <option value="Təkrar müayinə">Təkrar müayinə</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Əlaqə məlumatları</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Bölgə</div>
+                <input type="text" name="region" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Telefon</div>
+                <input type="text" name="phone" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Həkimi təyin et</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Təyin edilmiş həkim</div>
+                <select name="assigned_doctor_id" required>
+                    {% for d in doctors %}
+                        <option value="{{ d.id }}">{{ d.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="info-item">
+                <!-- <div class="info-label">Assigned Examination</div> -->
+                <select name="assigned_examination">
+                    <option value="">None</option>
+                    <option value="EEG">EEG</option>
+                    <option value="EMG">EMG</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Haqqımızda hardan məlumat almısınız?</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <!-- <div class="info-label">Source</div> -->
+                <select name="source">
+                    <option value="">Qeyd edilməyib</option>
+                    <option value="Tanışlardan">Tanışlardan</option>
+                    <option value="Həkim yönəldib">Həkim yönəldib</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Youtube">Youtube</option>
+                    <option value="TV reklam">TV reklam</option>
+                    <option value="Digər">Digər</option>
+                </select>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Əlavə məlumat (ehtiyyac olarsa)</div>
+                <input type="text" name="source_details" placeholder="Optional note">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <button type="submit">Yadda saxla</button>
+    </div>
+
+</form>
+
+{% endblock %}

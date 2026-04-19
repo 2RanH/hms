@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Audit Logs</h2>
+
+<div class="card">
+    <div class="card-title">Recent Administrative Actions</div>
+
+    {% if logs %}
+        {% for log in logs %}
+            <div class="medical-box">
+                <div class="medical-box-header">
+                    <strong>{{ log.actor }}</strong>
+                    <span>{{ log.created_at }}</span>
+                </div>
+
+                <div class="medical-line">
+                    <strong>Action:</strong> {{ log.action }}
+                </div>
+
+                <div class="medical-line">
+                    <strong>Entity:</strong> {{ log.entity_type }}
+                    {% if log.entity_id %}
+                        (ID {{ log.entity_id }})
+                    {% endif %}
+                </div>
+
+                {% if log.details %}
+                    <div class="medical-line">
+                        <strong>Details:</strong>
+                        {% if log.entity_type == "patient" %}
+                            <a href="/ui/doctor/patients/{{ log.entity_id }}">
+                                {{ log.details }}
+                            </a>
+                        {% else %}
+                            {{ log.details }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="muted">No audit logs available.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

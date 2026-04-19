@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Mənim pasientlərim</h2>
+
+<div class="card">
+    <form method="get">
+        <input
+            type="text"
+            name="q"
+            value="{{ request.query_params.get('q','') }}"
+            placeholder="Adı və ya telefonu ilə axtar">
+            <br> <br>   
+        <button type="submit">Axtar</button>
+    </form>
+</div>
+
+<div class="card">
+    <!-- <div class="card-title">Assigned Patients</div> -->
+
+    <table width="100%" cellpadding="8">
+        <tr class="muted">
+            <!-- <th>ID</th> -->
+            <th>Pasientin adı</th>
+            <th>Doğum tarixi</th>
+            <th>Telefon</th>
+            <!-- <th>Exam</th> -->
+            <!-- <th>Action</th> -->
+        </tr>
+
+        {% for p in patients %}
+        <tr>
+            <!-- <td>{{ p.id }}</td> -->
+            <td><strong>{{ p.name }} {{ p.surname }}</strong></td>
+            <td>{{ p.date_of_birth }}</td>
+            <td>{{ p.phone }}</td>
+            <!-- <td>{{ p.assigned_examination or "-" }}</td> -->
+            <td>
+                <a href="/ui/doctor/patients/{{ p.id }}">Məlumatları aç</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Notifications</h2>
+
+<div class="card">
+    <div class="card-title">Son bildirişlər</div>
+
+    {% if notifications %}
+        {% for n in notifications %}
+            <div class="medical-box">
+                <div class="medical-box-header">
+                    <strong>Bildirişlər</strong>
+                    <span>{{ n.created_at }}</span>
+                </div>
+
+                <div class="medical-line">
+                    {{ n.message }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="muted"> Bildiriş yoxdur.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Financial Reports</h2>
+<div class="muted">Income & Costs Overview</div>
+
+<form method="get" class="card">
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">From</div>
+            <input type="date" name="from_date" value="{{ request.query_params.get('from_date','') }}">
+        </div>
+        <div class="info-item">
+            <div class="info-label">To</div>
+            <input type="date" name="to_date" value="{{ request.query_params.get('to_date','') }}">
+        </div>
+        <div class="info-item">
+            <button type="submit">Filter</button>
+        </div>
+    </div>
+</form>
+
+{% set income_total = payments | selectattr("is_cost", "equalto", False) | sum(attribute="amount") %}
+{% set cost_total = payments | selectattr("is_cost", "equalto", True) | sum(attribute="amount") %}
+
+<div class="info-grid">
+    <div class="card">
+        <div class="card-title">Total Income</div>
+        <h2 style="color:#1fa84a;">{{ income_total }} AZN</h2>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Total Costs</div>
+        <h2 style="color:#c0392b;">{{ cost_total }} AZN</h2>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Net Result</div>
+        <h2>{{ income_total - cost_total }} AZN</h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Transactions</div>
+
+    <table width="100%" cellpadding="8">
+        <tr class="muted">
+            <th>Date</th>
+            <th>Entity</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>User</th>
+        </tr>
+
+        {% for p in payments %}
+        <tr>
+            <td>{{ p.created_at }}</td>
+            <td>{{ p.entity_name }}</td>
+            <td>
+                <span class="badge">{{ p.payment_type }}</span>
+            </td>
+            <td>
+                {% if p.is_cost %}
+                    <strong style="color:#c0392b;">-{{ p.amount }} AZN</strong>
+                {% else %}
+                    <strong style="color:#1fa84a;">+{{ p.amount }} AZN</strong>
+                {% endif %}
+            </td>
+            <td>{{ p.received_by }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<a href="/admin">← Back to admin</a>
+
+{% endblock %}

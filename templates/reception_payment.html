@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Ödənişi qeyd et</h2>
+
+<div class="card">
+    <div class="card-title">Pasientin adı və soyadı</div>
+    <strong>{{ patient.name }} {{ patient.surname }}</strong>
+</div>
+
+<div class="card">
+    <div class="card-title">Ödəniş haqqında məlumat</div>
+
+    <form method="post">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Ödəniş növü</div>
+                <select name="payment_type" required>
+                    <option value="consultation">Konsultasiya</option>
+                    <option value="EEG">EEG</option>
+                    <option value="EMG">EMG</option>
+                </select>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Məbləğ (AZN)</div>
+                <input type="number" name="amount" step="0.01" required>
+            </div>
+        </div>
+
+        <br>
+        <button type="submit">Ödənişi qeyd et</button>
+    </form>
+</div>
+
+{% if request.query_params.get("success") %}
+<div class="card" style="border-left:4px solid #1fa84a;">
+    <strong>Ödəniş qeyd edildi:</strong><br>
+    {{ request.query_params.get("amount") }} AZN — {{ request.query_params.get("type") }}
+</div>
+{% endif %}
+
+{% endblock %}

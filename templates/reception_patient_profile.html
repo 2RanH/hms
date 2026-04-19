@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Patient Profile</h2>
+
+<form method="post">
+
+    <!-- ========================= -->
+    <!-- Patient Information -->
+    <!-- ========================= -->
+    <div class="card">
+        <div class="card-title">Pasient haqqında məlumat</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Adı və soyadı</div>
+                <div class="info-value">{{ patient.name }} {{ patient.surname }}</div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Doğum tarixi</div>
+                <div class="info-value">{{ patient.date_of_birth }}</div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Telefon</div>
+                <div class="info-value">{{ patient.phone }}</div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Region</div>
+                <div class="info-value">{{ patient.region }}</div>
+            </div>
+
+            <!-- Status (editable by reception) -->
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <select name="status">
+                    <option value="İlk qəbul" {% if patient.status == "İlk qəbul" %}selected{% endif %}>
+                        İlk qəbul
+                    </option>
+                    <option value="Təkrar müayinə" {% if patient.status == "Təkrar müayinə" %}selected{% endif %}>
+                        Təkrar müayinə
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="text-align: right;">
+        <button type="submit">Dəyişiklikləri yadda saxla</button>
+        &nbsp;
+        <a href="/ui/reception/patients">
+            <button type="button" style="background:#777;">
+                Geri qayıt
+            </button>
+        </a>
+    </div>
+    
+    <!-- ========================= -->
+    <!-- Notes + Payments (Parallel Layout) -->
+    <!-- ========================= -->
+    <div class="info-grid">
+
+        <!-- Payments (LEFT, read-only) -->
+        <div class="card">
+            <div class="card-title">Payments</div>
+
+            {% if payments %}
+                {% for p in payments %}
+                    <div class="medical-box">
+                        <div class="medical-box-header">
+                            <strong>{{ p.payment_type }}</strong>
+                            <span>{{ p.created_at }}</span>
+                        </div>
+                        <div class="medical-line">
+                            {{ p.amount }} AZN
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="muted">No payments yet.</div>
+            {% endif %}
+        </div>
+
+        <!-- Notes (RIGHT, editable) -->
+        <div class="card">
+            <div class="card-title">Administrative Notes</div>
+
+            <textarea name="notes" style="min-height:160px;">{{ patient.notes }}</textarea>
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Actions -->
+    <!-- ========================= -->
+    <div class="card">
+        <button type="submit">Save Changes</button>
+        &nbsp;
+        <a href="/ui/reception/patients">
+            <button type="button" style="background:#777;">
+                Back
+            </button>
+        </a>
+    </div>
+
+</form>
+
+{% endblock %}

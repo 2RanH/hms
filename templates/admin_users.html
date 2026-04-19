@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Users</h2>
+
+<div class="card">
+    <div class="card-title">System Users</div>
+
+    <table width="100%" cellpadding="8">
+        <tr class="muted">
+            <th>ID</th>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>Created At</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for u in users %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td><strong>{{ u.username }}</strong></td>
+            <td>{{ u.full_name }}</td>
+            <td>
+                <span class="badge">{{ u.role }}</span>
+            </td>
+            <td>{{ u.created_at }}</td>
+            <td>
+                <a href="/ui/admin/users/{{ u.id }}/edit">
+                    <button type="button" style="background:#3498db;">
+                        Edit
+                    </button>
+                </a>
+                
+                <form
+                    method="post"
+                    action="/ui/admin/users/{{ u.id }}/delete"
+                    style="display:inline;"
+                    onsubmit="return confirm('Are you sure you want to delete user {{ u.username }}?');"
+                >
+                    <button type="submit" style="background:#c0392b;">
+                        Delete
+                    </button>
+                </form>
+                
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="card">
+    <a href="/ui/admin/users/create">
+        <button>Create New User</button>
+    </a>
+</div>
+
+{% endblock %}

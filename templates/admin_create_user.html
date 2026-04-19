@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Create New User</h2>
+
+<form method="post" action="/admin/users/create">
+
+    <div class="card">
+        <div class="card-title">User Information</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Username</div>
+                <input type="text" name="username" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Full Name</div>
+                <input type="text" name="full_name" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Role</div>
+                <select name="role" required>
+                    <option value="admin">Admin</option>
+                    <option value="reception">Reception</option>
+                    <option value="doctor">Doctor</option>
+                </select>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Password</div>
+                <input
+                    type="text"
+                    name="password"
+                    placeholder="Leave empty to auto-generate"
+                >
+            </div>
+        </div>
+    </div>
+
+    {% if success %}
+    <div class="card" style="border-left:4px solid #1fa84a;">
+        <strong>User created successfully</strong><br>
+        Username: <strong>{{ created_username }}</strong><br>
+        Temporary password: <strong>{{ created_password }}</strong>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="card" style="border-left:4px solid #c0392b;">
+        <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <button type="submit">Create User</button>
+        &nbsp;
+        <a href="/admin">
+            <button type="button" style="background:#777;">
+                Back to Admin
+            </button>
+        </a>
+    </div>
+
+</form>
+
+{% endblock %}

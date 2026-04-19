@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Pasientin tibbi kartı</h2>
+
+<!-- ========================= -->
+<!-- Patient Information -->
+<!-- ========================= -->
+<div class="card">
+    <div class="card-title">Pasient haqqında məlumat</div>
+
+    <div class="info-grid">
+
+        <div class="info-item">
+            <div class="info-label">Adı</div>
+            <div class="info-value">
+                {{ patient.name }} {{ patient.surname }}
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Status</div>
+            <div class="info-value">
+                {{ patient.status or "-" }}
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Doğum tarixi</div>
+            <div class="info-value">
+                {{ patient.date_of_birth }}
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Telefon</div>
+            <div class="info-value">
+                {{ patient.phone }}
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Bölgə</div>
+            <div class="info-value">
+                {{ patient.region }}
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Source</div>
+            <div class="info-value">
+                {{ patient.source or "-" }}
+            </div>
+        </div>
+        
+
+        <!-- <div class="info-item">
+            <div class="info-label">Assigned Examination</div>
+            <div class="info-value">
+                {{ patient.assigned_examination or "-" }}
+            </div> -->
+        </div>
+
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- Medical History -->
+<!-- ========================= -->
+<div class="card">
+    <div class="card-title">Tibbi tarixçə</div>
+
+    {% if records %}
+        {% set ns = namespace(current_key=None) %}
+
+        {% for r in records %}
+            {% set entry_key = r.author ~ '|' ~ r.created_at %}
+
+            {% if ns.current_key != entry_key %}
+                {% if not loop.first %}
+                    </div>
+                {% endif %}
+
+                <div class="medical-box">
+                    <div class="medical-box-header">
+                        <strong>{{ r.author }}</strong>
+                        <span>{{ r.created_at }}</span>
+                    </div>
+
+                {% set ns.current_key = entry_key %}
+            {% endif %}
+
+            <div class="medical-line">
+                <strong>{{ r.record_type|capitalize }}:</strong>
+                {{ r.content }}
+            </div>
+
+            {% if loop.last %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <div class="muted">Heç bir qeyd yoxdur</div>
+    {% endif %}
+</div>
+
+<!-- ========================= -->
+<!-- Doctor Actions -->
+<!-- ========================= -->
+{% if user.role == "doctor" %}
+<div class="card">
+    <div class="card-title">Actions</div>
+
+    <a href="/ui/doctor/patients/{{ patient.id }}/records/add">Tibbi qeyd əlavə et</a>
+    |
+    <a href="/ui/doctor/patients/{{ patient.id }}/reassign">Digər həkimə yönəlt</a>
+</div>
+{% endif %}
+
+{% endblock %}

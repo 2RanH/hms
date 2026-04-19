@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if request.query_params.get("created") %}
+<div class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-icon">✔</div>
+        <h3>Uğurla yaradıldı!</h3>
+        <p>Pasiyent uğurla sistemə əlavə olundu.</p>
+        <button onclick="window.location.href='/ui/reception/patients'">OK</button>
+    </div>
+</div>
+{% endif %}
+
+<h2>Pasientlər</h2>
+
+<div class="card">
+    <form method="get">
+        <input type="text" name="q" placeholder="Search by name or phone" value="{{ request.query_params.get('q','') }}">
+        <br> <br>   
+        <button type="submit">Axtar</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-title">Pasientlərin siyahısı</div>
+
+    <table width="100%" cellpadding="8">
+        <!-- <tr >
+            <th>ID</th>
+            <th>Patient</th>
+            <th>Phone</th>
+            <th>Doctor</th>
+            <th>Exam</th>
+            <th>Actions</th>
+        </tr> -->
+
+        {% for p in patients %}
+        <tr>
+            <!-- <td>{{ p.id }}</td> -->
+            <td><strong>{{ p.name }} {{ p.surname }} {{ p.father_name }}</strong></td>
+            <td>{{ p.phone }}</td>
+            <td>{{ p.doctor_name }}</td>
+            <!-- <td>{{ p.assigned_examination or "-" }}</td> -->
+            <td>
+                <a href="/ui/reception/patients/{{ p.id }}/profile">Pasientin məlumatları</a> |
+                <a href="/ui/reception/patients/{{ p.id }}/edit">Düzəliş et</a> |
+                <a href="/ui/reception/patients/{{ p.id }}/assign">Həkimi dəyiş</a> |
+                <a href="/ui/reception/patients/{{ p.id }}/payments">Ödənişlər</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

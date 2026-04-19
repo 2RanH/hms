@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Edit User</h2>
+
+<form method="post" action="/ui/admin/users/{{ target.id }}/edit">
+
+    <div class="card">
+        <div class="card-title">User Information</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Username</div>
+                <input
+                    type="text"
+                    name="username"
+                    value="{{ target.username }}"
+                    required
+                >
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Full Name</div>
+                <input
+                    type="text"
+                    name="full_name"
+                    value="{{ target.full_name }}"
+                    required
+                >
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Role</div>
+                <select name="role">
+                    <option value="admin" {% if target.role == "admin" %}selected{% endif %}>Admin</option>
+                    <option value="reception" {% if target.role == "reception" %}selected{% endif %}>Reception</option>
+                    <option value="doctor" {% if target.role == "doctor" %}selected{% endif %}>Doctor</option>
+                </select>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">New Password</div>
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Leave empty to keep current"
+                >
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <button type="submit">Save Changes</button>
+        &nbsp;
+        <a href="/ui/admin/users">
+            <button type="button" style="background:#777;">
+                Cancel
+            </button>
+        </a>
+    </div>
+
+</form>
+
+{% endblock %}

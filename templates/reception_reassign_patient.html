@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Həkimi dəyiş</h2>
+
+<p>
+    Pasientin adı və soyadı: {{ patient.name }} {{ patient.surname }}
+</p>
+
+<form method="post">
+
+    <label>Yeni həkim təyin et:<br>
+        <select name="assigned_doctor_id">
+            <option value="">Keep current</option>
+            {% for d in doctors %}
+                <option value="{{ d.id }}">{{ d.full_name }}</option>
+            {% endfor %}
+        </select>
+    </label><br><br>
+
+    <label>Assign examination:<br>
+        <select name="assigned_examination">
+            <option value="">Hazırda olan</option>
+            <option value="EEG">EEG</option>
+            <option value="EMG">EMG</option>
+        </select>
+    </label><br><br>
+
+    <button type="submit">Dəyişiklikləri yadda saxla</button>
+</form>
+{% endblock %}

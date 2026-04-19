@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Costs</h2>
+
+{% if request.query_params.get("success") %}
+    <div class="card" style="border-left:4px solid #1fa84a;">
+        <strong>Xərc uğurla qeyd edildi</strong>
+    </div>
+{% endif %}
+
+
+<div class="card">
+    <div class="card-title">Yeni xərcin qeydi</div>
+
+    <form method="post">
+        <table width="100%" cellpadding="8">
+            <tr class="muted">
+                <th>Category</th>
+                <th>Details (optional)</th>
+                <th>Amount (AZN)</th>
+                <th></th>
+            </tr>
+
+            {% for c in categories %}
+            <tr>
+                <td>{{ c }}</td>
+                <td>
+                    <input type="text" name="details_{{ loop.index }}">
+                </td>
+                <td>
+                    <input type="number" step="0.01" name="amount_{{ loop.index }}">
+                </td>
+                <td>
+                    <button type="submit" name="category" value="{{ c }}">Təsdiqlə</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
+</div>
+
+{% endblock %}

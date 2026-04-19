@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Pasientin məlumatlarına düzəliş et</h2>
+
+<form method="post" action="/ui/reception/patients/{{ patient.id }}/edit">
+
+    <div class="card">
+        <div class="card-title">Pasient haqqında məlumat</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Adı</div>
+                <input type="text" name="name" value="{{ patient.name }}" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Soyadı</div>
+                <input type="text" name="surname" value="{{ patient.surname }}" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Ata adı</div>
+                <input type="text" name="father_name" value="{{ patient.father_name }}" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Telefon</div>
+                <input type="text" name="phone" value="{{ patient.phone }}" required>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Bölgə</div>
+                <input type="text" name="region" value="{{ patient.region }}" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <button type="submit">Dəyişiklikləri yadda saxla</button>
+        &nbsp;
+        <a href="/ui/reception/patients">Ləğv et</a>
+    </div>
+
+</form>
+
+{% endblock %}
