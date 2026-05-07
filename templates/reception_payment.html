@@ -34,6 +34,47 @@
     </form>
 </div>
 
+<div class="card">
+    <div class="card-title">Ödəniş tarixçəsi</div>
+
+    {% if payments %}
+        {% for p in payments %}
+            <div class="medical-box">
+                <div class="medical-box-header">
+                    <strong>{{ p.payment_type }}</strong>
+                    <span>{{ p.created_at }}</span>
+                </div>
+
+                <div class="medical-line">
+                    {{ p.amount }} AZN
+
+                    <form
+                        method="post"
+                        action="/ui/reception/payments/{{ p.id }}/delete"
+                        style="display:inline;"
+                        onsubmit="return confirm('Ödənişi silmək istədiyinizə əminsiniz?');"
+                    >
+                        <button
+                            type="submit"
+                            style="
+                                background:none;
+                                border:none;
+                                color:#c0392b;
+                                cursor:pointer;
+                                margin-left:10px;
+                            "
+                        >
+                            Sil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="muted">Ödəniş yoxdur</div>
+    {% endif %}
+</div>
+
 {% if request.query_params.get("success") %}
 <div class="card" style="border-left:4px solid #1fa84a;">
     <strong>Ödəniş qeyd edildi:</strong><br>

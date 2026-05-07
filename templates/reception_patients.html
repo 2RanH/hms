@@ -48,6 +48,26 @@
                 <a href="/ui/reception/patients/{{ p.id }}/edit">Düzəliş et</a> |
                 <a href="/ui/reception/patients/{{ p.id }}/assign">Həkimi dəyiş</a> |
                 <a href="/ui/reception/patients/{{ p.id }}/payments">Ödənişlər</a>
+                <form
+                    method="post"
+                    action="/ui/reception/patients/{{ p.id }}/delete"
+                    style="display:inline;"
+                    onsubmit="return confirm('Pasienti silmək istədiyinizə əminsiniz?');"
+                >
+                    <button
+                        type="submit"
+                        style="
+                            background:none;
+                            border:none;
+                            color:#c0392b;
+                            cursor:pointer;
+                            padding:0;
+                            font:inherit;
+                        "
+                    >
+                        Sil
+                    </button>
+                </form>
             </td>
         </tr>
         {% endfor %}

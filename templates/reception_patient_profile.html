@@ -33,12 +33,19 @@
                 <div class="info-value">{{ patient.region }}</div>
             </div>
 
+            <div class="info-item">
+                <div class="info-label">İlk qeydiyyat tarixi</div>
+                <div class="info-value">
+                    {{ patient.first_registration_date or "-" }}
+                </div>
+            </div>
+
             <!-- Status (editable by reception) -->
             <div class="info-item">
                 <div class="info-label">Status</div>
                 <select name="status">
-                    <option value="İlk qəbul" {% if patient.status == "İlk qəbul" %}selected{% endif %}>
-                        İlk qəbul
+                    <option value="Yeni" {% if patient.status == "Yeni" %}selected{% endif %}>
+                        Yeni
                     </option>
                     <option value="Təkrar müayinə" {% if patient.status == "Təkrar müayinə" %}selected{% endif %}>
                         Təkrar müayinə

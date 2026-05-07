@@ -46,6 +46,14 @@
                 {{ patient.region }}
             </div>
         </div>
+
+        <div class="info-item">
+            <div class="info-label">İlk qeydiyyat tarixi</div>
+            <div class="info-value">
+                {{ patient.first_registration_date or "-" }}
+            </div>
+        </div>
+
         <div class="info-item">
             <div class="info-label">Source</div>
             <div class="info-value">

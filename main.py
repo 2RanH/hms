@@ -489,7 +489,8 @@ def admin_patients(
     cursor.execute("""
         SELECT id, name, surname, phone
         FROM patients
-        WHERE name LIKE ? OR surname LIKE ?
+        WHERE is_active = 1
+        AND (name LIKE ? OR surname LIKE ?) 
         ORDER BY id DESC
     """, (f"%{q}%", f"%{q}%"))
 
@@ -566,7 +567,8 @@ def doctor_patients(
             phone,
             assigned_examination
         FROM patients
-        WHERE assigned_doctor_id = ?
+        WHERE is_active = 1
+        AND assigned_doctor_id = ?
         AND (name LIKE ? OR surname LIKE ?)
         ORDER BY id DESC
     """, (user["id"], f"%{q}%", f"%{q}%"))
@@ -603,6 +605,7 @@ def doctor_reassign_patient_page(
         SELECT id, full_name
         FROM users
         WHERE role = 'doctor'
+        AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -884,7 +887,8 @@ def reception_patients(
             users.full_name AS doctor_name
         FROM patients
         JOIN users ON users.id = patients.assigned_doctor_id
-        WHERE patients.name LIKE ? OR patients.surname LIKE ?
+        WHERE patients.is_active = 1
+        AND (patients.name LIKE ? OR patients.surname LIKE ?)
         ORDER BY patients.id DESC
     """, (f"%{q}%", f"%{q}%"))
 
@@ -920,7 +924,7 @@ def reception_payment_page(
         raise HTTPException(status_code=404)
 
     cursor.execute("""
-        SELECT payment_type, amount, created_at
+        SELECT id, payment_type, amount, created_at
         FROM payments
         WHERE patient_id = ?
         ORDER BY created_at DESC
@@ -1004,7 +1008,50 @@ def reception_payment_submit(
         status_code=302
 )
 
+@app.post("/ui/reception/payments/{payment_id}/delete")
+def reception_delete_payment(
+    payment_id: int,
+    user=Depends(get_current_user_from_cookie)
+):
+    if user["role"] != "reception":
+        raise HTTPException(status_code=403)
 
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT patient_id, amount, payment_type
+        FROM payments
+        WHERE id = ?
+    """, (payment_id,))
+
+    payment = cursor.fetchone()
+
+    if not payment:
+        conn.close()
+        raise HTTPException(status_code=404)
+
+    cursor.execute("""
+        DELETE FROM payments
+        WHERE id = ?
+    """, (payment_id,))
+
+    log_action(
+        cursor,
+        action="delete_payment",
+        entity_type="payment",
+        entity_id=payment_id,
+        user_id=user["id"],
+        details=f"Deleted payment: {payment['amount']} AZN ({payment['payment_type']})"
+    )
+
+    conn.commit()
+    conn.close()
+
+    return RedirectResponse(
+        url=f"/ui/reception/patients/{payment['patient_id']}/payments",
+        status_code=302
+    )
 
 
 @app.get("/ui/reception/patients/{patient_id}/edit", response_class=HTMLResponse)
@@ -1089,6 +1136,55 @@ def reception_edit_patient_submit(
         status_code=302
     )
 
+@app.post("/ui/reception/patients/{patient_id}/delete")
+def reception_delete_patient(
+    patient_id: int,
+    user=Depends(get_current_user_from_cookie)
+):
+    if user["role"] != "reception":
+        raise HTTPException(status_code=403)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT name, surname FROM patients WHERE id = ?",
+        (patient_id,)
+    )
+    patient = cursor.fetchone()
+
+    if not patient:
+        conn.close()
+        raise HTTPException(status_code=404)
+
+    cursor.execute("""
+        UPDATE patients
+        SET is_active = 0
+        WHERE id = ?
+    """, (patient_id,))
+
+    cursor.execute("""
+        DELETE FROM payments
+        WHERE patient_id = ?
+    """, (patient_id,))
+
+    log_action(
+        cursor,
+        action="delete_patient",
+        entity_type="patient",
+        entity_id=patient_id,
+        user_id=user["id"],
+        details=f"Patient deleted: {patient['name']} {patient['surname']}"
+    )
+
+    conn.commit()
+    conn.close()
+
+    return RedirectResponse(
+        url="/ui/reception/patients",
+        status_code=302
+    )
+
 @app.get("/ui/reception/patients/{patient_id}/assign", response_class=HTMLResponse)
 def reception_reassign_patient_page(
     patient_id: int,
@@ -1111,6 +1207,7 @@ def reception_reassign_patient_page(
         SELECT id, full_name
         FROM users
         WHERE role = 'doctor'
+        AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -1304,7 +1401,7 @@ def reception_create_patient_page(
     request: Request,
     user=Depends(get_current_user_from_cookie)
 ):
-    if user["role"] != "reception":
+    if user["role"] not in ("reception", "doctor"):
         raise HTTPException(status_code=403)
 
     conn = get_db_connection()
@@ -1314,6 +1411,7 @@ def reception_create_patient_page(
         SELECT id, full_name
         FROM users
         WHERE role = 'doctor'
+        AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -1324,7 +1422,8 @@ def reception_create_patient_page(
         {
             "request": request,
             "user": user,
-            "doctors": doctors
+            "doctors": doctors,
+            "current_date": datetime.now().strftime("%Y-%m-%d")
         }
     )
 
@@ -1339,13 +1438,14 @@ def reception_create_patient_submit(
     gender: str = Form(...),
     region: str = Form(...),
     phone: str = Form(...),
+    first_registration_date: str = Form(None),
     assigned_doctor_id: int = Form(...),
     assigned_examination: str = Form(None),
     status: str = Form(None),
     source: str = Form(None),
     source_details: str = Form(None),
 ):
-    if user["role"] != "reception":
+    if user["role"] not in ("reception", "doctor"):
         raise HTTPException(status_code=403)
 
     # Normalize source (use details only if "Digər")
@@ -1361,13 +1461,15 @@ def reception_create_patient_submit(
             name, surname, father_name, date_of_birth,
             gender, region, phone,
             assigned_doctor_id, assigned_examination,
-            status, source, created_at
+            status, source, first_registration_date, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         name, surname, father_name, date_of_birth,
         gender, region, phone,
         assigned_doctor_id, assigned_examination,
-        status, final_source,
+        status,
+        final_source,
+        first_registration_date,
         now_local()
     ))
 

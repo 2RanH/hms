@@ -41,7 +41,7 @@
             <div class="info-item">
                 <div class="info-label">Status</div>
                 <select name="status">
-                    <option value="İlk qəbul">İlk qəbul</option>
+                    <option value="Yeni">Yeni</option>
                     <option value="Təkrar müayinə">Təkrar müayinə</option>
                 </select>
             </div>
@@ -61,6 +61,14 @@
                 <div class="info-label">Telefon</div>
                 <input type="text" name="phone" required>
             </div>
+            <div class="info-item">
+                <div class="info-label">İlk qeydiyyat tarixi</div>
+                <input
+                    type="date"
+                    name="first_registration_date"
+                    value="{{ current_date }}"
+                >
+            </div>
         </div>
     </div>
 
@@ -77,14 +85,14 @@
                 </select>
             </div>
 
-            <div class="info-item">
-                <!-- <div class="info-label">Assigned Examination</div> -->
+            <!-- <div class="info-item">
+                 <div class="info-label">Assigned Examination</div>
                 <select name="assigned_examination">
                     <option value="">None</option>
                     <option value="EEG">EEG</option>
                     <option value="EMG">EMG</option>
                 </select>
-            </div>
+            </div> -->
         </div>
     </div>
 
