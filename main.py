@@ -789,18 +789,12 @@ def doctor_patient_detail(
     # =========================
     # Load patient
     # =========================
-    if user["role"] == "doctor":
-        cursor.execute("""
-            SELECT *
-            FROM patients
-            WHERE id = ? AND assigned_doctor_id = ?
-        """, (patient_id, user["id"]))
-    else:  # admin
-        cursor.execute("""
-            SELECT *
-            FROM patients
-            WHERE id = ?
-        """, (patient_id,))
+            
+    cursor.execute("""
+        SELECT *
+        FROM patients
+        WHERE id = ?
+    """, (patient_id,))
 
     patient = cursor.fetchone()
     if not patient:
