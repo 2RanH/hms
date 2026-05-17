@@ -45,6 +45,16 @@
                     <option value="Təkrar müayinə">Təkrar müayinə</option>
                 </select>
             </div>
+            <div class="info-item">
+                <div class="info-label">İlk qeydiyyat tarixi</div>
+
+                <input
+                    type="date"
+                    name="first_registration_date"
+                    value="{{ today }}"
+                    required
+                >
+            </div>
         </div>
     </div>
 
@@ -60,14 +70,6 @@
             <div class="info-item">
                 <div class="info-label">Telefon</div>
                 <input type="text" name="phone" required>
-            </div>
-            <div class="info-item">
-                <div class="info-label">İlk qeydiyyat tarixi</div>
-                <input
-                    type="date"
-                    name="first_registration_date"
-                    value="{{ current_date }}"
-                >
             </div>
         </div>
     </div>
@@ -86,7 +88,7 @@
             </div>
 
             <!-- <div class="info-item">
-                 <div class="info-label">Assigned Examination</div>
+                 <div class="info-label">Assigned Examination</div> 
                 <select name="assigned_examination">
                     <option value="">None</option>
                     <option value="EEG">EEG</option>
@@ -113,7 +115,7 @@
                 </select>
             </div>
 
-            <div class="info-item">
+            <div class="info-item" style="margin-top:-14px;">
                 <div class="info-label">Əlavə məlumat (ehtiyyac olarsa)</div>
                 <input type="text" name="source_details" placeholder="Optional note">
             </div>

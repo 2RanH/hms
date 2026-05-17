@@ -2,7 +2,31 @@
 
 {% block content %}
 
-<h2>Pasientin tibbi kartı</h2>
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+">
+    <h2 style="margin:0;">
+        Pasientin tibbi kartı
+    </h2>
+
+    <button
+        type="button"
+        onclick="history.back()"
+        style="
+            background:#777;
+            color:white;
+            border:none;
+            border-radius:18px;
+            padding:8px 14px;
+            cursor:pointer;
+        "
+    >
+        Geri
+    </button>
+</div>
 
 <!-- ========================= -->
 <!-- Patient Information -->
@@ -34,6 +58,11 @@
         </div>
 
         <div class="info-item">
+            <div class="info-label">İlk qeydiyyat tarixi</div>
+            <div>{{ patient.first_registration_date or "-" }}</div>
+        </div>
+
+        <div class="info-item">
             <div class="info-label">Telefon</div>
             <div class="info-value">
                 {{ patient.phone }}
@@ -46,14 +75,6 @@
                 {{ patient.region }}
             </div>
         </div>
-
-        <div class="info-item">
-            <div class="info-label">İlk qeydiyyat tarixi</div>
-            <div class="info-value">
-                {{ patient.first_registration_date or "-" }}
-            </div>
-        </div>
-
         <div class="info-item">
             <div class="info-label">Source</div>
             <div class="info-value">
@@ -71,6 +92,51 @@
 
     </div>
 </div>
+
+<!-- ========================= -->
+<!-- Doctor Actions -->
+<!-- ========================= -->
+
+{% if user.role == "doctor" %}
+<div class="card">
+
+    <div class="card-title">Əməliyyatlar</div>
+
+    <a href="/ui/doctor/patients/{{ patient.id }}/records/add">
+        <button
+            type="button"
+            style="
+                background:#2d7ff9;
+                color:white;
+                border:none;
+                border-radius:8px;
+                padding:8px 14px;
+                margin-right:10px;
+                cursor:pointer;
+            "
+        >
+            Tibbi qeyd əlavə et
+        </button>
+    </a>
+
+    <a href="/ui/doctor/patients/{{ patient.id }}/reassign">
+        <button
+            type="button"
+            style="
+                background:#34a853;
+                color:white;
+                border:none;
+                border-radius:8px;
+                padding:8px 14px;
+                cursor:pointer;
+            "
+        >
+            Digər həkimə yönəlt
+        </button>
+    </a>
+
+</div>
+{% endif %}
 
 <!-- ========================= -->
 <!-- Medical History -->
@@ -98,7 +164,7 @@
                 {% set ns.current_key = entry_key %}
             {% endif %}
 
-            <div class="medical-line">
+            <div class="medical-line" style="word-break:break-word; overflow-wrap:anywhere;">
                 <strong>{{ r.record_type|capitalize }}:</strong>
                 {{ r.content }}
             </div>
@@ -111,18 +177,4 @@
         <div class="muted">Heç bir qeyd yoxdur</div>
     {% endif %}
 </div>
-
-<!-- ========================= -->
-<!-- Doctor Actions -->
-<!-- ========================= -->
-{% if user.role == "doctor" %}
-<div class="card">
-    <div class="card-title">Actions</div>
-
-    <a href="/ui/doctor/patients/{{ patient.id }}/records/add">Tibbi qeyd əlavə et</a>
-    |
-    <a href="/ui/doctor/patients/{{ patient.id }}/reassign">Digər həkimə yönəlt</a>
-</div>
-{% endif %}
-
 {% endblock %}

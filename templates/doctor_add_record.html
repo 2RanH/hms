@@ -1,24 +1,95 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <h2>Tibbi məlumatları əlavə edin</h2>
 
-<p>Pasient: {{ patient.name }} {{ patient.surname }}</p>
+<div class="card">
+    <div class="card-title">Pasient</div>
+
+    <strong>
+        {{ patient.name }} {{ patient.surname }}
+    </strong>
+</div>
 
 <form method="post">
 
-    <label>Tibbi qeydlər:<br>
-        <textarea name="note" rows="4" cols="60"></textarea>
-    </label><br><br>
+    <div class="card">
 
-    <label>Diaqnoz:<br>
-        <textarea name="diagnosis" rows="4" cols="60"></textarea>
-    </label><br><br>
+        <div class="card-title">Tibbi məlumatlar</div>
 
-    <label>Resept:<br>
-        <textarea name="prescription" rows="4" cols="60"></textarea>
-    </label><br><br>
+        <div class="info-grid">
 
-    <button type="submit">Yadda saxla</button>
+            <div class="info-item">
+                <div class="info-label">Şikayətlər</div>
+
+                <textarea
+                    name="shikayetler"
+                    rows="5"
+                    style="width:100%;"
+                ></textarea>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Anamnez</div>
+
+                <textarea
+                    name="anamnez"
+                    rows="5"
+                    style="width:100%;"
+                ></textarea>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Nevrostatus</div>
+
+                <textarea
+                    name="nevrostatus"
+                    rows="5"
+                    style="width:100%;"
+                ></textarea>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Müayinə</div>
+
+                <textarea
+                    name="muayine"
+                    rows="5"
+                    style="width:100%;"
+                ></textarea>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Diaqnoz</div>
+
+                <textarea
+                    name="diaqnoz"
+                    rows="5"
+                    style="width:100%;"
+                ></textarea>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Müalicə</div>
+
+                <textarea
+                    name="mualice"
+                    rows="5"
+                    style="width:100%;"
+                ></textarea>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card" style="text-align:right;">
+        <button type="submit">
+            Yadda saxla
+        </button>
+    </div>
+
 </form>
+
 {% endblock %}

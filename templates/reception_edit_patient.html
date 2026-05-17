@@ -34,13 +34,36 @@
                 <div class="info-label">Bölgə</div>
                 <input type="text" name="region" value="{{ patient.region }}" required>
             </div>
+            <div class="info-item">
+                <div class="info-label">Doğum tarixi</div>
+
+                <input
+                    type="date"
+                    name="date_of_birth"
+                    value="{{ patient.date_of_birth }}"
+                    required
+                >
+            </div>
+
         </div>
     </div>
 
     <div class="card">
         <button type="submit">Dəyişiklikləri yadda saxla</button>
         &nbsp;
-        <a href="/ui/reception/patients">Ləğv et</a>
+        <a
+            href="/ui/reception/patients"
+            style="
+                background:#777;
+                color:white;
+                padding:8px 14px;
+                border-radius:8px;
+                text-decoration:none;
+                display:inline-block;
+            "
+        >
+            Ləğv et
+        </a>
     </div>
 
 </form>

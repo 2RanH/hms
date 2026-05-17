@@ -6,6 +6,11 @@ from database import get_db_connection
 # PASSWORDS
 # =========================
 
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    deprecated="auto"
+)
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 

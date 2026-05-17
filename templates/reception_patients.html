@@ -17,8 +17,14 @@
 
 <div class="card">
     <form method="get">
-        <input type="text" name="q" placeholder="Search by name or phone" value="{{ request.query_params.get('q','') }}">
-        <br> <br>   
+        <input
+            type="text"
+            name="q"
+            placeholder="Ad, soyad, ata adı və ya telefon nömrəsi ilə axtarış"
+            value="{{ request.query_params.get('q','') }}"
+        >
+        <br><br>
+
         <button type="submit">Axtar</button>
     </form>
 </div>
@@ -26,28 +32,99 @@
 <div class="card">
     <div class="card-title">Pasientlərin siyahısı</div>
 
-    <table width="100%" cellpadding="8">
-        <!-- <tr >
-            <th>ID</th>
-            <th>Patient</th>
-            <th>Phone</th>
-            <th>Doctor</th>
-            <th>Exam</th>
-            <th>Actions</th>
-        </tr> -->
+    <table width="100%" cellpadding="12">
+
+        <tr class="muted" style="border-bottom:1px solid #ddd;">
+            <th align="left" style="width:25%;">Pasientin adı</th>
+            <th align="left" style="width:15%;">Telefon nömrəsi</th>
+            <th align="left" style="width:20%;">Təyin edilmiş həkim</th>
+            <th align="left" style="width:40%;">Əməliyyatlar</th>
+        </tr>
 
         {% for p in patients %}
-        <tr>
-            <!-- <td>{{ p.id }}</td> -->
-            <td><strong>{{ p.name }} {{ p.surname }} {{ p.father_name }}</strong></td>
-            <td>{{ p.phone }}</td>
-            <td>{{ p.doctor_name }}</td>
-            <!-- <td>{{ p.assigned_examination or "-" }}</td> -->
+        <tr style="border-bottom:1px solid #eee;">
+
             <td>
-                <a href="/ui/reception/patients/{{ p.id }}/profile">Pasientin məlumatları</a> |
-                <a href="/ui/reception/patients/{{ p.id }}/edit">Düzəliş et</a> |
-                <a href="/ui/reception/patients/{{ p.id }}/assign">Həkimi dəyiş</a> |
-                <a href="/ui/reception/patients/{{ p.id }}/payments">Ödənişlər</a>
+                <strong>
+                    {{ p.name }} {{ p.surname }} {{ p.father_name }}
+                </strong>
+            </td>
+
+            <td>{{ p.phone }}</td>
+
+            <td>{{ p.doctor_name }}</td>
+
+            <td style="white-space:nowrap;">
+
+               <a href="{% if user.role == 'doctor' %}/ui/doctor/patients/{{ p.id }}{% else %}/ui/reception/patients/{{ p.id }}/profile{% endif %}">
+                    <button
+                        type="button"
+                        style="
+                            background:#2d7ff9;
+                            color:white;
+                            border:none;
+                            border-radius:8px;
+                            padding:6px 10px;
+                            margin:4px 2px;
+                            cursor:pointer;
+                        "
+                    >
+                        Pasientin məlumatları
+                    </button>
+                </a>
+
+                <a href="/ui/reception/patients/{{ p.id }}/edit">
+                    <button
+                        type="button"
+                        style="
+                            background:#f4b400;
+                            color:white;
+                            border:none;
+                            border-radius:8px;
+                            padding:8px 14px;
+                            margin:2px;
+                            cursor:pointer;
+                        "
+                    >
+                        Düzəliş et
+                    </button>
+                </a>
+
+                <a href="{% if user.role == 'doctor' %}/ui/doctor/patients/{{ p.id }}/reassign{% else %}/ui/reception/patients/{{ p.id }}/assign{% endif %}">
+                    <button
+                        type="button"
+                        style="
+                            background:#34a853;
+                            color:white;
+                            border:none;
+                            border-radius:8px;
+                            padding:8px 14px;
+                            margin:2px;
+                            cursor:pointer;
+                        "
+                    >
+                        Həkimi dəyiş
+                    </button>
+                </a>
+
+                {% if user.role == "reception" %}
+                <a href="/ui/reception/patients/{{ p.id }}/payments">
+                    <button
+                        type="button"
+                        style="
+                            background:#2d7ff9;
+                            color:white;
+                            border:none;
+                            border-radius:8px;
+                            padding:8px 14px;
+                            margin:2px;
+                            cursor:pointer;
+                        "
+                    >
+                        Ödənişlər
+                    </button>
+                </a>
+                {% endif %}
                 <form
                     method="post"
                     action="/ui/reception/patients/{{ p.id }}/delete"
@@ -57,20 +134,24 @@
                     <button
                         type="submit"
                         style="
-                            background:none;
+                            background:#ea4335;
+                            color:white;
                             border:none;
-                            color:#c0392b;
+                            border-radius:8px;
+                            padding:8px 14px;
+                            margin:2px;
                             cursor:pointer;
-                            padding:0;
-                            font:inherit;
                         "
                     >
                         Sil
                     </button>
                 </form>
+
             </td>
+
         </tr>
         {% endfor %}
+
     </table>
 </div>
 

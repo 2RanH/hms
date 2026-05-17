@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Profil</h2>
+
+<div class="card">
+    <div class="card-title">İstifadəçi məlumatları</div>
+
+    <div class="info-grid">
+
+        <div class="info-item">
+            <div class="info-label">İstifadəçi adı</div>
+            <input
+                type="text"
+                value="{{ user.username }}"
+                disabled
+            >
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Ad və soyad</div>
+            <input
+                type="text"
+                value="{{ user.full_name }}"
+                disabled
+            >
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">Rol</div>
+            <input
+                type="text"
+                value="{{ user.role }}"
+                disabled
+            >
+        </div>
+
+    </div>
+</div>
+
+<form method="post" action="/profile">
+
+    <div class="card">
+        <div class="card-title">Şifrəni dəyiş</div>
+
+        <div class="info-grid">
+
+            <div class="info-item">
+                <div class="info-label">Cari şifrə</div>
+                <input
+                    type="password"
+                    name="current_password"
+                    required
+                >
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Yeni şifrə</div>
+                <input
+                    type="password"
+                    name="new_password"
+                    required
+                >
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">Yeni şifrə təkrar</div>
+                <input
+                    type="password"
+                    name="confirm_password"
+                    required
+                >
+            </div>
+
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="card" style="border-left:4px solid #e53935;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="card" style="border-left:4px solid #1fa84a;">
+        {{ success }}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <button type="submit">
+            Şifrəni dəyiş
+        </button>
+    </div>
+
+</form>
+
+{% endblock %}

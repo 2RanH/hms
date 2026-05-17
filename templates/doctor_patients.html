@@ -6,42 +6,149 @@
 
 <div class="card">
     <form method="get">
+
         <input
             type="text"
             name="q"
             value="{{ request.query_params.get('q','') }}"
-            placeholder="Adı və ya telefonu ilə axtar">
-            <br> <br>   
-        <button type="submit">Axtar</button>
+            placeholder="Ad, soyad və ya telefon ilə axtar"
+        >
+
+        <br><br>
+
+        <button type="submit">
+            Axtar
+        </button>
+
     </form>
 </div>
 
+{% if grouped_patients %}
+
+    {% for day, patients in grouped_patients.items() %}
+
+    <div class="card">
+
+        <div class="card-title" style="
+            font-size:20px;
+            margin-bottom:20px;
+            border-bottom:1px solid #ddd;
+            padding-bottom:10px;
+        ">
+            {{ day }}
+        </div>
+
+        <table width="100%" cellpadding="10">
+
+            <tr class="muted">
+                <th align="left">Pasient</th>
+                <th align="left">Doğum tarixi</th>
+                <th align="left">Telefon</th>
+                <th align="left">Tibbi qeydlər</th>
+                <th align="left">Əməliyyat</th>
+            </tr>
+
+            {% for p in patients %}
+
+            <tr style="border-bottom:1px solid #eee;">
+
+                <td>
+                    <strong>
+                        {{ p.name }}
+                        {{ p.surname }}
+                        {{ p.father_name }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ p.date_of_birth }}
+                </td>
+
+                <td>
+                    {{ p.phone }}
+                </td>
+
+                <td>
+
+                    {% if p.record_status == "none" %}
+
+                        <span style="
+                            background:#e53935;
+                            color:white;
+                            padding:4px 8px;
+                            border-radius:12px;
+                            font-size:12px;
+                            font-weight:bold;
+                        ">
+                            Qeyd yoxdur
+                        </span>
+
+                    {% elif p.record_status == "active" %}
+
+                        <span style="
+                            background:#1fa84a;
+                            color:white;
+                            padding:4px 8px;
+                            border-radius:12px;
+                            font-size:12px;
+                            font-weight:bold;
+                        ">
+                            Aktiv
+                        </span>
+
+                    {% else %}
+
+                        <span style="
+                            background:#f1c40f;
+                            color:black;
+                            padding:4px 8px;
+                            border-radius:12px;
+                            font-size:12px;
+                            font-weight:bold;
+                        ">
+                            Köhnə qeyd
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    <a href="/ui/doctor/patients/{{ p.id }}">
+                        <button
+                            type="button"
+                            style="
+                                background:#2d7ff9;
+                                color:white;
+                                border:none;
+                                border-radius:8px;
+                                padding:6px 12px;
+                                cursor:pointer;
+                            "
+                        >
+                            Məlumatları aç
+                        </button>
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
 <div class="card">
-    <!-- <div class="card-title">Assigned Patients</div> -->
-
-    <table width="100%" cellpadding="8">
-        <tr class="muted">
-            <!-- <th>ID</th> -->
-            <th>Pasientin adı</th>
-            <th>Doğum tarixi</th>
-            <th>Telefon</th>
-            <!-- <th>Exam</th> -->
-            <!-- <th>Action</th> -->
-        </tr>
-
-        {% for p in patients %}
-        <tr>
-            <!-- <td>{{ p.id }}</td> -->
-            <td><strong>{{ p.name }} {{ p.surname }}</strong></td>
-            <td>{{ p.date_of_birth }}</td>
-            <td>{{ p.phone }}</td>
-            <!-- <td>{{ p.assigned_examination or "-" }}</td> -->
-            <td>
-                <a href="/ui/doctor/patients/{{ p.id }}">Məlumatları aç</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+    Pasient tapılmadı.
 </div>
+
+{% endif %}
 
 {% endblock %}

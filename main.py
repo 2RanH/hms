@@ -36,6 +36,46 @@ app.include_router(admin_users_router)
 
 templates = Jinja2Templates(directory="templates")
 
+def inject_notification_count(request: Request):
+    unread_notifications = 0
+
+    token = request.cookies.get("session_token")
+
+    if token:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT users.id, users.role
+                FROM sessions
+                JOIN users ON users.id = sessions.user_id
+                WHERE sessions.token = ?
+            """, (token,))
+
+            user = cursor.fetchone()
+
+            if user and user["role"] == "doctor":
+                cursor.execute("""
+                    SELECT COUNT(*) as count
+                    FROM notifications
+                    WHERE user_id = ?
+                    AND is_read = 0
+                """, (user["id"],))
+
+                unread_notifications = cursor.fetchone()["count"]
+
+            conn.close()
+
+        except:
+            pass
+
+    return {
+        "unread_notifications": unread_notifications
+    }
+
+templates.env.globals["inject_notification_count"] = inject_notification_count
+
 # ======================================================
 # GLOBAL UI AUTH HANDLER
 # ======================================================
@@ -489,8 +529,7 @@ def admin_patients(
     cursor.execute("""
         SELECT id, name, surname, phone
         FROM patients
-        WHERE is_active = 1
-        AND (name LIKE ? OR surname LIKE ?) 
+        WHERE name LIKE ? OR surname LIKE ?
         ORDER BY id DESC
     """, (f"%{q}%", f"%{q}%"))
 
@@ -560,21 +599,77 @@ def doctor_patients(
 
     cursor.execute("""
         SELECT
-            id,
-            name,
-            surname,
-            date_of_birth,
-            phone,
-            assigned_examination
-        FROM patients
-        WHERE is_active = 1
-        AND assigned_doctor_id = ?
-        AND (name LIKE ? OR surname LIKE ?)
-        ORDER BY id DESC
-    """, (user["id"], f"%{q}%", f"%{q}%"))
+            assignment_history.changed_at,
 
+            patients.id,
+            patients.name,
+            patients.surname,
+            patients.father_name,
+            patients.date_of_birth,
+            patients.phone,
 
-    patients = [dict(row) for row in cursor.fetchall()]
+            (
+                SELECT MAX(created_at)
+                FROM medical_records
+                WHERE medical_records.patient_id = patients.id
+            ) AS last_record_date
+
+        FROM assignment_history
+
+        JOIN patients
+            ON patients.id = assignment_history.patient_id
+
+        WHERE assignment_history.assigned_doctor_id = ?
+        AND patients.is_active = 1
+        AND (
+            patients.name LIKE ?
+            OR patients.surname LIKE ?
+            OR patients.phone LIKE ?
+        )
+
+        ORDER BY assignment_history.changed_at DESC
+    """, (
+        user["id"],
+        f"%{q}%",
+        f"%{q}%",
+        f"%{q}%"
+    ))
+
+    grouped_patients = {}
+
+    for row in cursor.fetchall():
+
+        patient = dict(row)
+
+        visit_day = patient["changed_at"][:10]
+
+        last_record = patient.get("last_record_date")
+
+        if not last_record:
+            patient["record_status"] = "none"
+
+        else:
+            try:
+                last_date = datetime.strptime(
+                    last_record[:10],
+                    "%Y-%m-%d"
+                )
+
+                days_diff = (datetime.now() - last_date).days
+
+                if days_diff <= 7:
+                    patient["record_status"] = "active"
+                else:
+                    patient["record_status"] = "old"
+
+            except:
+                patient["record_status"] = "old"
+
+        if visit_day not in grouped_patients:
+            grouped_patients[visit_day] = []
+
+        grouped_patients[visit_day].append(patient)
+
     conn.close()
 
     return templates.TemplateResponse(
@@ -582,7 +677,7 @@ def doctor_patients(
         {
             "request": request,
             "user": user,
-            "patients": patients
+            "grouped_patients": grouped_patients
         }
     )
 
@@ -605,7 +700,6 @@ def doctor_reassign_patient_page(
         SELECT id, full_name
         FROM users
         WHERE role = 'doctor'
-        AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -782,9 +876,13 @@ def doctor_add_record_page(
 def doctor_add_record_submit(
     patient_id: int,
     user=Depends(get_current_user_from_cookie),
-    note: str = Form(None),
-    diagnosis: str = Form(None),
-    prescription: str = Form(None)
+
+    shikayetler: str = Form(None),
+    anamnez: str = Form(None),
+    nevrostatus: str = Form(None),
+    muayine: str = Form(None),
+    diaqnoz: str = Form(None),
+    mualice: str = Form(None)
 ):
     if user["role"] != "doctor":
         raise HTTPException(status_code=403)
@@ -793,8 +891,10 @@ def doctor_add_record_submit(
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id FROM patients
-        WHERE id = ? AND assigned_doctor_id = ?
+        SELECT id
+        FROM patients
+        WHERE id = ?
+        AND assigned_doctor_id = ?
     """, (patient_id, user["id"]))
 
     if not cursor.fetchone():
@@ -803,26 +903,35 @@ def doctor_add_record_submit(
 
     now = now_local()
 
-    if note:
-        cursor.execute("""
-            INSERT INTO medical_records (
-                patient_id, record_type, content, created_by_user_id, created_at
-            ) VALUES (?, 'note', ?, ?, ?)
-        """, (patient_id, note, user["id"], now))
+    records = [
+        ("Şikayətlər", shikayetler),
+        ("Anamnez", anamnez),
+        ("Nevrostatus", nevrostatus),
+        ("Müayinə", muayine),
+        ("Diaqnoz", diaqnoz),
+        ("Müalicə", mualice)
+    ]
 
-    if diagnosis:
-        cursor.execute("""
-            INSERT INTO medical_records (
-                patient_id, record_type, content, created_by_user_id, created_at
-            ) VALUES (?, 'diagnosis', ?, ?, ?)
-        """, (patient_id, diagnosis, user["id"], now))
+    for record_type, content in records:
 
-    if prescription:
-        cursor.execute("""
-            INSERT INTO medical_records (
-                patient_id, record_type, content, created_by_user_id, created_at
-            ) VALUES (?, 'prescription', ?, ?, ?)
-        """, (patient_id, prescription, user["id"], now))
+        if content and content.strip():
+
+            cursor.execute("""
+                INSERT INTO medical_records (
+                    patient_id,
+                    record_type,
+                    content,
+                    created_by_user_id,
+                    created_at
+                )
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                patient_id,
+                record_type,
+                content,
+                user["id"],
+                now
+            ))
 
     conn.commit()
     conn.close()
@@ -845,13 +954,19 @@ def doctor_notifications(
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT message, created_at
+        SELECT id, message, created_at
         FROM notifications
         WHERE user_id = ?
         ORDER BY created_at DESC
     """, (user["id"],))
 
     notifications = [dict(row) for row in cursor.fetchall()]
+    cursor.execute("""
+        UPDATE notifications
+        SET is_read = 1
+        WHERE user_id = ?
+    """, (user["id"],))
+    conn.commit()
     conn.close()
 
     return templates.TemplateResponse(
@@ -870,7 +985,7 @@ def reception_patients(
     q: str = ""
 ):
 
-    if user["role"] != "reception":
+    if user["role"] not in ["reception", "doctor"]:
         raise HTTPException(status_code=403)
 
     conn = get_db_connection()
@@ -888,7 +1003,10 @@ def reception_patients(
         FROM patients
         JOIN users ON users.id = patients.assigned_doctor_id
         WHERE patients.is_active = 1
-        AND (patients.name LIKE ? OR patients.surname LIKE ?)
+        AND (
+            patients.name LIKE ?
+            OR patients.surname LIKE ?
+        )
         ORDER BY patients.id DESC
     """, (f"%{q}%", f"%{q}%"))
 
@@ -1060,7 +1178,7 @@ def reception_edit_patient_page(
     request: Request,
     user=Depends(get_current_user_from_cookie)
 ):
-    if user["role"] != "reception":
+    if user["role"] not in ["reception", "doctor"]:
         raise HTTPException(status_code=403)
 
     conn = get_db_connection()
@@ -1092,9 +1210,10 @@ def reception_edit_patient_submit(
     surname: str = Form(...),
     father_name: str = Form(...),
     phone: str = Form(...),
-    region: str = Form(...)
+    region: str = Form(...),
+    date_of_birth: str = Form(...)
 ):
-    if user["role"] != "reception":
+    if user["role"] not in ["reception", "doctor"]:
         raise HTTPException(status_code=403)
 
     conn = get_db_connection()
@@ -1107,7 +1226,8 @@ def reception_edit_patient_submit(
             surname = ?,
             father_name = ?,
             phone = ?,
-            region = ?
+            region = ?,
+            date_of_birth = ?
         WHERE id = ?
     """, (
         name,
@@ -1115,6 +1235,7 @@ def reception_edit_patient_submit(
         father_name,
         phone,
         region,
+        date_of_birth,
         patient_id
     ))
 
@@ -1136,12 +1257,13 @@ def reception_edit_patient_submit(
         status_code=302
     )
 
+
 @app.post("/ui/reception/patients/{patient_id}/delete")
 def reception_delete_patient(
     patient_id: int,
     user=Depends(get_current_user_from_cookie)
 ):
-    if user["role"] != "reception":
+    if user["role"] not in ["reception", "doctor"]:
         raise HTTPException(status_code=403)
 
     conn = get_db_connection()
@@ -1207,7 +1329,6 @@ def reception_reassign_patient_page(
         SELECT id, full_name
         FROM users
         WHERE role = 'doctor'
-        AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -1401,7 +1522,7 @@ def reception_create_patient_page(
     request: Request,
     user=Depends(get_current_user_from_cookie)
 ):
-    if user["role"] not in ("reception", "doctor"):
+    if user["role"] not in ["reception", "doctor"]:
         raise HTTPException(status_code=403)
 
     conn = get_db_connection()
@@ -1411,7 +1532,6 @@ def reception_create_patient_page(
         SELECT id, full_name
         FROM users
         WHERE role = 'doctor'
-        AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -1423,7 +1543,7 @@ def reception_create_patient_page(
             "request": request,
             "user": user,
             "doctors": doctors,
-            "current_date": datetime.now().strftime("%Y-%m-%d")
+            "today": datetime.now().strftime("%Y-%m-%d")
         }
     )
 
@@ -1438,14 +1558,14 @@ def reception_create_patient_submit(
     gender: str = Form(...),
     region: str = Form(...),
     phone: str = Form(...),
-    first_registration_date: str = Form(None),
     assigned_doctor_id: int = Form(...),
     assigned_examination: str = Form(None),
     status: str = Form(None),
+    first_registration_date: str = Form(...),
     source: str = Form(None),
     source_details: str = Form(None),
 ):
-    if user["role"] not in ("reception", "doctor"):
+    if user["role"] not in ["reception", "doctor"]:
         raise HTTPException(status_code=403)
 
     # Normalize source (use details only if "Digər")
@@ -1461,15 +1581,13 @@ def reception_create_patient_submit(
             name, surname, father_name, date_of_birth,
             gender, region, phone,
             assigned_doctor_id, assigned_examination,
-            status, source, first_registration_date, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            status, first_registration_date, source, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         name, surname, father_name, date_of_birth,
         gender, region, phone,
         assigned_doctor_id, assigned_examination,
-        status,
-        final_source,
-        first_registration_date,
+        status, first_registration_date, final_source,
         now_local()
     ))
 
@@ -1582,6 +1700,77 @@ async def reception_costs_submit(
 
     return RedirectResponse("/ui/reception/costs?success=1", status_code=302)
 
+@app.get("/profile")
+def profile_page(
+    request: Request,
+    user=Depends(get_current_user_from_cookie)
+):
+    return templates.TemplateResponse(
+        "profile.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
 
+@app.post("/profile")
+def profile_update(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    user=Depends(get_current_user_from_cookie)
+):
+    if new_password != confirm_password:
+        return templates.TemplateResponse(
+            "profile.html",
+            {
+                "request": request,
+                "user": user,
+                "error": "Yeni şifrələr uyğun gəlmir"
+            }
+        )
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT password_hash FROM users WHERE id = ?",
+        (user["id"],)
+    )
+
+    db_user = cursor.fetchone()
+
+    if not verify_password(current_password, db_user["password_hash"]):
+        conn.close()
+
+        return templates.TemplateResponse(
+            "profile.html",
+            {
+                "request": request,
+                "user": user,
+                "error": "Cari şifrə yanlışdır"
+            }
+        )
+
+    new_hash = hash_password(new_password)
+
+    cursor.execute("""
+        UPDATE users
+        SET password_hash = ?
+        WHERE id = ?
+    """, (new_hash, user["id"]))
+
+    conn.commit()
+    conn.close()
+
+    return templates.TemplateResponse(
+        "profile.html",
+        {
+            "request": request,
+            "user": user,
+            "success": "Şifrə uğurla dəyişdirildi"
+        }
+    )
 
 
