@@ -699,7 +699,7 @@ def doctor_reassign_patient_page(
     cursor.execute("""
         SELECT id, full_name
         FROM users
-        WHERE role = 'doctor'
+        WHERE role = 'doctor' AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -1322,7 +1322,7 @@ def reception_reassign_patient_page(
     cursor.execute("""
         SELECT id, full_name
         FROM users
-        WHERE role = 'doctor'
+        WHERE role = 'doctor' AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
@@ -1525,7 +1525,7 @@ def reception_create_patient_page(
     cursor.execute("""
         SELECT id, full_name
         FROM users
-        WHERE role = 'doctor'
+        WHERE role = 'doctor' AND is_active = 1
         ORDER BY full_name
     """)
     doctors = [dict(row) for row in cursor.fetchall()]
