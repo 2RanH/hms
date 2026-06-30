@@ -2,46 +2,72 @@
 
 {% block content %}
 
-<h2>Patients</h2>
+<div class="page-heading">
+    <h2>Pasientlər</h2>
+    <p class="muted">Siyahıda hər səhifədə 25 pasient göstərilir.</p>
+</div>
 
 <div class="card">
-    <form method="get">
+    <form method="get" class="search-row">
         <input
             type="text"
             name="q"
-            value="{{ request.query_params.get('q','') }}"
-            placeholder="Search patient by name"
+            value="{{ q }}"
+            placeholder="Ad, soyad, ata adı və ya telefon nömrəsi ilə axtarış"
         >
-        <button type="submit">Search</button>
+        <button type="submit">Axtar</button>
     </form>
 </div>
 
 <div class="card">
-    <div class="card-title">Patient Directory</div>
+    <div class="list-header">
+        <div class="card-title">Pasientlərin siyahısı</div>
+        <div class="muted">
+            Cəmi: {{ total_patients }} · Səhifə {{ page }} / {{ total_pages }}
+        </div>
+    </div>
 
+    {% if patients %}
     <table width="100%" cellpadding="8">
         <tr class="muted">
             <th>ID</th>
-            <th>Patient</th>
-            <th>Phone</th>
-            <th>Action</th>
+            <th>Pasient</th>
+            <th>Telefon</th>
+            <th>Əməliyyat</th>
         </tr>
 
         {% for p in patients %}
         <tr>
             <td>{{ p.id }}</td>
-            <td><strong>{{ p.name }} {{ p.surname }}</strong></td>
+            <td><strong>{{ p.name }} {{ p.surname }} {{ p.father_name }}</strong></td>
             <td>{{ p.phone }}</td>
             <td>
                 <a href="/ui/doctor/patients/{{ p.id }}">
-                    Open Medical Card
+                    Tibbi kartı aç
                 </a>
             </td>
         </tr>
         {% endfor %}
     </table>
-</div>
 
-<a href="/admin">← Back to Admin</a>
+    <div class="pagination">
+        {% if has_prev %}
+            <a class="btn-secondary" href="/ui/admin/patients?q={{ q|urlencode }}&page={{ prev_page }}">Əvvəlki</a>
+        {% else %}
+            <span class="btn-secondary disabled">Əvvəlki</span>
+        {% endif %}
+
+        <span class="pagination-status">Səhifə {{ page }} / {{ total_pages }}</span>
+
+        {% if has_next %}
+            <a class="btn-secondary" href="/ui/admin/patients?q={{ q|urlencode }}&page={{ next_page }}">Növbəti</a>
+        {% else %}
+            <span class="btn-secondary disabled">Növbəti</span>
+        {% endif %}
+    </div>
+    {% else %}
+        <div class="muted">Pasient tapılmadı.</div>
+    {% endif %}
+</div>
 
 {% endblock %}

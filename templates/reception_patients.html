@@ -2,38 +2,52 @@
 
 {% block content %}
 
-{% if request.query_params.get("created") %}
-<div class="modal-backdrop">
-    <div class="modal-box">
-        <div class="modal-icon">✔</div>
-        <h3>Uğurla yaradıldı!</h3>
-        <p>Pasiyent uğurla sistemə əlavə olundu.</p>
-        <button onclick="window.location.href='/ui/reception/patients'">OK</button>
+{% set modal_messages = {
+    "created": ("Uğurla yaradıldı!", "Pasient uğurla sistemə əlavə olundu."),
+    "updated": ("Uğurla yeniləndi!", "Pasient məlumatları yadda saxlanıldı."),
+    "reassigned": ("Həkim dəyişdirildi!", "Pasient yeni həkimə yönləndirildi."),
+    "deleted": ("Pasient silindi!", "Pasient siyahıdan silindi.")
+} %}
+{% for key, message in modal_messages.items() %}
+    {% if request.query_params.get(key) %}
+    <div class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-icon">✓</div>
+            <h3>{{ message[0] }}</h3>
+            <p>{{ message[1] }}</p>
+            <button onclick="window.location.href='/ui/reception/patients'">OK</button>
+        </div>
     </div>
-</div>
-{% endif %}
+    {% endif %}
+{% endfor %}
 
-<h2>Pasientlər</h2>
+<div class="page-heading">
+    <h2>Pasientlər</h2>
+    <p class="muted">Siyahıda hər səhifədə 25 pasient göstərilir.</p>
+</div>
 
 <div class="card">
-    <form method="get">
+    <form method="get" class="search-row">
         <input
             type="text"
             name="q"
             placeholder="Ad, soyad, ata adı və ya telefon nömrəsi ilə axtarış"
-            value="{{ request.query_params.get('q','') }}"
+            value="{{ q }}"
         >
-        <br><br>
-
         <button type="submit">Axtar</button>
     </form>
 </div>
 
 <div class="card">
-    <div class="card-title">Pasientlərin siyahısı</div>
+    <div class="list-header">
+        <div class="card-title">Pasientlərin siyahısı</div>
+        <div class="muted">
+            Cəmi: {{ total_patients }} · Səhifə {{ page }} / {{ total_pages }}
+        </div>
+    </div>
 
+    {% if patients %}
     <table width="100%" cellpadding="12">
-
         <tr class="muted" style="border-bottom:1px solid #ddd;">
             <th align="left" style="width:25%;">Pasientin adı</th>
             <th align="left" style="width:15%;">Telefon nömrəsi</th>
@@ -43,116 +57,96 @@
 
         {% for p in patients %}
         <tr style="border-bottom:1px solid #eee;">
-
             <td>
-                <strong>
-                    {{ p.name }} {{ p.surname }} {{ p.father_name }}
-                </strong>
+                <strong>{{ p.name }} {{ p.surname }} {{ p.father_name }}</strong>
             </td>
 
             <td>{{ p.phone }}</td>
-
             <td>{{ p.doctor_name }}</td>
 
             <td style="white-space:nowrap;">
-
-               <a href="{% if user.role == 'doctor' %}/ui/doctor/patients/{{ p.id }}{% else %}/ui/reception/patients/{{ p.id }}/profile{% endif %}">
-                    <button
-                        type="button"
-                        style="
-                            background:#2d7ff9;
-                            color:white;
-                            border:none;
-                            border-radius:8px;
-                            padding:6px 10px;
-                            margin:4px 2px;
-                            cursor:pointer;
-                        "
-                    >
+                <a href="{% if user.role == 'doctor' %}/ui/doctor/patients/{{ p.id }}{% else %}/ui/reception/patients/{{ p.id }}/profile{% endif %}">
+                    <button type="button" style="background:#2d7ff9; color:white; border:none; border-radius:8px; padding:6px 10px; margin:4px 2px; cursor:pointer;">
                         Pasientin məlumatları
                     </button>
                 </a>
 
                 <a href="/ui/reception/patients/{{ p.id }}/edit">
-                    <button
-                        type="button"
-                        style="
-                            background:#f4b400;
-                            color:white;
-                            border:none;
-                            border-radius:8px;
-                            padding:8px 14px;
-                            margin:2px;
-                            cursor:pointer;
-                        "
-                    >
+                    <button type="button" style="background:#f4b400; color:white; border:none; border-radius:8px; padding:8px 14px; margin:2px; cursor:pointer;">
                         Düzəliş et
                     </button>
                 </a>
 
                 <a href="{% if user.role == 'doctor' %}/ui/doctor/patients/{{ p.id }}/reassign{% else %}/ui/reception/patients/{{ p.id }}/assign{% endif %}">
-                    <button
-                        type="button"
-                        style="
-                            background:#34a853;
-                            color:white;
-                            border:none;
-                            border-radius:8px;
-                            padding:8px 14px;
-                            margin:2px;
-                            cursor:pointer;
-                        "
-                    >
+                    <button type="button" style="background:#34a853; color:white; border:none; border-radius:8px; padding:8px 14px; margin:2px; cursor:pointer;">
                         Həkimi dəyiş
                     </button>
                 </a>
 
                 {% if user.role == "reception" %}
                 <a href="/ui/reception/patients/{{ p.id }}/payments">
-                    <button
-                        type="button"
-                        style="
-                            background:#2d7ff9;
-                            color:white;
-                            border:none;
-                            border-radius:8px;
-                            padding:8px 14px;
-                            margin:2px;
-                            cursor:pointer;
-                        "
-                    >
+                    <button type="button" style="background:#2d7ff9; color:white; border:none; border-radius:8px; padding:8px 14px; margin:2px; cursor:pointer;">
                         Ödənişlər
                     </button>
                 </a>
                 {% endif %}
+
                 <form
                     method="post"
                     action="/ui/reception/patients/{{ p.id }}/delete"
                     style="display:inline;"
-                    onsubmit="return confirm('Pasienti silmək istədiyinizə əminsiniz?');"
+                    id="delete-patient-form-{{ p.id }}"
                 >
-                    <button
-                        type="submit"
-                        style="
-                            background:#ea4335;
-                            color:white;
-                            border:none;
-                            border-radius:8px;
-                            padding:8px 14px;
-                            margin:2px;
-                            cursor:pointer;
-                        "
-                    >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                    <button type="button" onclick="openConfirmModal('delete-patient-modal-{{ p.id }}')" style="background:#ea4335; color:white; border:none; border-radius:8px; padding:8px 14px; margin:2px; cursor:pointer;">
                         Sil
                     </button>
                 </form>
 
+                <div class="modal-backdrop modal-confirm" id="delete-patient-modal-{{ p.id }}">
+                    <div class="modal-box">
+                        <div class="modal-icon modal-icon-danger">!</div>
+                        <h3>Pasienti sil</h3>
+                        <p>Bu pasienti silmək istədiyinizə əminsiniz?</p>
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary" onclick="closeConfirmModal('delete-patient-modal-{{ p.id }}')">Geri qayıt</button>
+                            <button type="submit" form="delete-patient-form-{{ p.id }}" class="btn-danger">Sil</button>
+                        </div>
+                    </div>
+                </div>
             </td>
-
         </tr>
         {% endfor %}
-
     </table>
+
+    <div class="pagination">
+        {% if has_prev %}
+            <a class="btn-secondary" href="/ui/reception/patients?q={{ q|urlencode }}&page={{ prev_page }}">Əvvəlki</a>
+        {% else %}
+            <span class="btn-secondary disabled">Əvvəlki</span>
+        {% endif %}
+
+        <span class="pagination-status">Səhifə {{ page }} / {{ total_pages }}</span>
+
+        {% if has_next %}
+            <a class="btn-secondary" href="/ui/reception/patients?q={{ q|urlencode }}&page={{ next_page }}">Növbəti</a>
+        {% else %}
+            <span class="btn-secondary disabled">Növbəti</span>
+        {% endif %}
+    </div>
+    {% else %}
+        <div class="muted">Pasient tapılmadı.</div>
+    {% endif %}
 </div>
+
+<script>
+function openConfirmModal(id) {
+    document.getElementById(id).style.display = 'flex';
+}
+
+function closeConfirmModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+</script>
 
 {% endblock %}

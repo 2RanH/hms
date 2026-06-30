@@ -39,6 +39,7 @@
                     style="display:inline;"
                     onsubmit="return confirm('Are you sure you want to delete user {{ u.username }}?');"
                 >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
                     <button type="submit" style="background:#c0392b;">
                         Delete
                     </button>

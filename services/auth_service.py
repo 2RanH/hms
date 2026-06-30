@@ -1,4 +1,4 @@
-import uuid
+import secrets
 from datetime import datetime, UTC
 
 from fastapi import HTTPException
@@ -12,7 +12,12 @@ def authenticate_user_and_return_token(username: str, password: str):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT * FROM users WHERE username = ?",
+        """
+        SELECT *
+        FROM users
+        WHERE username = ?
+        AND COALESCE(is_active, 1) = 1
+        """,
         (username,)
     )
     user = cursor.fetchone()
@@ -21,14 +26,15 @@ def authenticate_user_and_return_token(username: str, password: str):
         conn.close()
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = str(uuid.uuid4())
+    token = secrets.token_urlsafe(32)
+    csrf_token = secrets.token_urlsafe(32)
 
     cursor.execute(
         """
-        INSERT INTO sessions (token, user_id, created_at)
-        VALUES (?, ?, ?)
+        INSERT INTO sessions (token, user_id, created_at, csrf_token)
+        VALUES (?, ?, ?, ?)
         """,
-        (token, user["id"], datetime.now(UTC).isoformat())
+        (token, user["id"], datetime.now(UTC).isoformat(), csrf_token)
     )
 
     conn.commit()

@@ -3,7 +3,7 @@
 {% block content %}
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-    <h2 style="margin:0;">Tibbi məlumatları əlavə edin</h2>
+    <h2 style="margin:0;">Tibbi qeydə düzəliş et</h2>
     <a href="/ui/doctor/patients/{{ patient.id }}" class="btn-secondary">Geri qayıt</a>
 </div>
 
@@ -19,44 +19,40 @@
         <div class="card-title">Tibbi məlumatlar</div>
 
         <div class="info-grid">
+            {% for field_name, record_type in record_fields %}
             <div class="info-item">
-                <div class="info-label">Şikayətlər</div>
-                <textarea name="shikayetler" rows="5" style="width:100%;"></textarea>
+                <div class="info-label">{{ record_type }}</div>
+                <textarea
+                    name="{{ field_name }}"
+                    rows="5"
+                    style="width:100%;"
+                >{{ values.get(record_type, "") }}</textarea>
             </div>
-
-            <div class="info-item">
-                <div class="info-label">Anamnez</div>
-                <textarea name="anamnez" rows="5" style="width:100%;"></textarea>
-            </div>
-
-            <div class="info-item">
-                <div class="info-label">Nevrostatus</div>
-                <textarea name="nevrostatus" rows="5" style="width:100%;"></textarea>
-            </div>
-
-            <div class="info-item">
-                <div class="info-label">Müayinə</div>
-                <textarea name="muayine" rows="5" style="width:100%;"></textarea>
-            </div>
-
-            <div class="info-item">
-                <div class="info-label">Diaqnoz</div>
-                <textarea name="diaqnoz" rows="5" style="width:100%;"></textarea>
-            </div>
-
-            <div class="info-item">
-                <div class="info-label">Müalicə</div>
-                <textarea name="mualice" rows="5" style="width:100%;"></textarea>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
     <div class="card">
         <div class="card-title">Əlavələr</div>
+
+        {% if attachments %}
+            {% for attachment in attachments %}
+                <div class="medical-line">
+                    <a href="/ui/attachments/{{ attachment.id }}" target="_blank">
+                        {{ attachment.original_filename }}
+                    </a>
+                    <span class="muted">{{ attachment.created_at }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="muted">Əlavə yoxdur</div>
+        {% endif %}
+
+        <br>
         <div class="file-picker">
-            <label class="file-picker-label" for="attachments-add">Fayl seçin</label>
+            <label class="file-picker-label" for="attachments-edit">Fayl seçin</label>
             <span class="file-picker-name" data-empty-text="heç bir fayl seçilməyib">heç bir fayl seçilməyib</span>
-            <input id="attachments-add" type="file" name="attachments" multiple>
+            <input id="attachments-edit" type="file" name="attachments" multiple>
         </div>
     </div>
 

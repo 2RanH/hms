@@ -1,5 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Reception baş səhifə</h2>
-<p>Xoş gəldiniz, {{ user.username }}</p>
+<div class="dashboard-hero">
+    <p class="welcome-text">Xoş gəlmisiniz, {{ user.full_name or user.username }}</p>
+</div>
+
+<div class="clinic-hero">
+    <img class="clinic-logo" src="/static/css/clinic-logo.png" alt="RH Nevrologiya Klinikası">
+    <div class="clinic-name">Professor Rövşən Həsənovun Nevrologiya Klinikası</div>
+</div>
+
+<div class="dashboard-actions">
+    <a class="dashboard-action" href="/ui/reception/patients/create">
+        <div class="dashboard-action-title">Yeni pasient</div>
+        <div class="dashboard-action-text">Yeni pasient qeydiyyatı yaradın və ilkin məlumatları daxil edin.</div>
+    </a>
+
+    <a class="dashboard-action" href="/ui/reception/patients">
+        <div class="dashboard-action-title">Pasientlər</div>
+        <div class="dashboard-action-text">Mövcud pasientləri tapın, düzəliş edin və kartlara baxın.</div>
+    </a>
+
+    <a class="dashboard-action" href="/ui/reception/costs">
+        <div class="dashboard-action-title">Xərclər</div>
+        <div class="dashboard-action-text">Gündəlik xərcləri əlavə edin və siyahını izləyin.</div>
+    </a>
+
+    <a class="dashboard-action" href="/profile">
+        <div class="dashboard-action-title">Profil</div>
+        <div class="dashboard-action-text">Hesab məlumatlarınıza baxın və sessiyanızı idarə edin.</div>
+    </a>
+</div>
 {% endblock %}

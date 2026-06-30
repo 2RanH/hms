@@ -2,179 +2,172 @@
 
 {% block content %}
 
-<div style="
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
-">
-    <h2 style="margin:0;">
-        Pasientin tibbi kartı
-    </h2>
+{% set modal_messages = {
+    "record_added": ("Tibbi qeyd əlavə edildi!", "Tibbi məlumatlar pasient kartına əlavə olundu."),
+    "record_updated": ("Tibbi qeyd yeniləndi!", "Dəyişikliklər yadda saxlanıldı."),
+    "record_deleted": ("Tibbi qeyd silindi!", "Tibbi qeyd və ona aid əlavələr silindi.")
+} %}
+{% for key, message in modal_messages.items() %}
+    {% if request.query_params.get(key) %}
+    <div class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-icon">✓</div>
+            <h3>{{ message[0] }}</h3>
+            <p>{{ message[1] }}</p>
+            <button onclick="window.location.href='/ui/doctor/patients/{{ patient.id }}'">OK</button>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
 
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="margin:0;">Pasientin tibbi kartı</h2>
     <button
         type="button"
         onclick="history.back()"
-        style="
-            background:#777;
-            color:white;
-            border:none;
-            border-radius:8px;
-            padding:8px 14px;
-            cursor:pointer;
-        "
+        style="background:#777; color:white; border:none; border-radius:8px; padding:8px 14px; cursor:pointer;"
     >
         Geri
     </button>
 </div>
 
-<!-- ========================= -->
-<!-- Patient Information -->
-<!-- ========================= -->
 <div class="card">
     <div class="card-title">Pasient haqqında məlumat</div>
 
     <div class="info-grid">
-
         <div class="info-item">
             <div class="info-label">Adı</div>
-            <div class="info-value">
-                {{ patient.name }} {{ patient.surname }}
-            </div>
+            <div class="info-value">{{ patient.name }} {{ patient.surname }}</div>
         </div>
 
         <div class="info-item">
             <div class="info-label">Status</div>
-            <div class="info-value">
-                {{ patient.status or "-" }}
-            </div>
+            <div class="info-value">{{ patient.status or "-" }}</div>
         </div>
 
         <div class="info-item">
             <div class="info-label">Doğum tarixi</div>
-            <div class="info-value">
-                {{ patient.date_of_birth }}
-            </div>
+            <div class="info-value">{{ patient.date_of_birth }}</div>
         </div>
 
         <div class="info-item">
             <div class="info-label">İlk qeydiyyat tarixi</div>
-            <div>{{ patient.first_registration_date or "-" }}</div>
+            <div class="info-value">{{ patient.first_registration_date or "-" }}</div>
         </div>
 
         <div class="info-item">
             <div class="info-label">Telefon</div>
-            <div class="info-value">
-                {{ patient.phone }}
-            </div>
+            <div class="info-value">{{ patient.phone }}</div>
         </div>
 
         <div class="info-item">
             <div class="info-label">Bölgə</div>
-            <div class="info-value">
-                {{ patient.region }}
-            </div>
+            <div class="info-value">{{ patient.region }}</div>
         </div>
+
         <div class="info-item">
-            <div class="info-label">Source</div>
-            <div class="info-value">
-                {{ patient.source or "-" }}
-            </div>
+            <div class="info-label">Mənbə</div>
+            <div class="info-value">{{ patient.source or "-" }}</div>
         </div>
-        
-
-        <!-- <div class="info-item">
-            <div class="info-label">Assigned Examination</div>
-            <div class="info-value">
-                {{ patient.assigned_examination or "-" }}
-            </div> -->
-        </div>
-
     </div>
 </div>
 
-<!-- ========================= -->
-<!-- Doctor Actions -->
-<!-- ========================= -->
-
 {% if user.role == "doctor" %}
 <div class="card">
-
     <div class="card-title">Əməliyyatlar</div>
 
     <a href="/ui/doctor/patients/{{ patient.id }}/records/add">
-        <button
-            type="button"
-            style="
-                background:#2d7ff9;
-                color:white;
-                border:none;
-                border-radius:8px;
-                padding:8px 14px;
-                margin-right:10px;
-                cursor:pointer;
-            "
-        >
+        <button type="button" style="background:#2d7ff9; color:white; border:none; border-radius:8px; padding:8px 14px; margin-right:10px; cursor:pointer;">
             Tibbi qeyd əlavə et
         </button>
     </a>
 
     <a href="/ui/doctor/patients/{{ patient.id }}/reassign">
-        <button
-            type="button"
-            style="
-                background:#34a853;
-                color:white;
-                border:none;
-                border-radius:8px;
-                padding:8px 14px;
-                cursor:pointer;
-            "
-        >
+        <button type="button" style="background:#34a853; color:white; border:none; border-radius:8px; padding:8px 14px; cursor:pointer;">
             Digər həkimə yönəlt
         </button>
     </a>
-
 </div>
 {% endif %}
 
-<!-- ========================= -->
-<!-- Medical History -->
-<!-- ========================= -->
 <div class="card">
     <div class="card-title">Tibbi tarixçə</div>
 
-    {% if records %}
-        {% set ns = namespace(current_key=None) %}
+    {% if record_entries %}
+        {% for entry in record_entries %}
+            <div class="medical-box">
+                <div class="medical-box-header">
+                    <strong>{{ entry.author }}</strong>
+                    <span>
+                        {{ entry.created_at }}
+                        {% if entry.updated_at %}
+                            · düzəliş: {{ entry.updated_at }}
+                        {% endif %}
+                    </span>
+                </div>
 
-        {% for r in records %}
-            {% set entry_key = r.author ~ '|' ~ r.created_at %}
+                {% for r in entry.records %}
+                    <div class="medical-line" style="word-break:break-word; overflow-wrap:anywhere;">
+                        <strong>{{ r.display_type or r.record_type|capitalize }}:</strong>
+                        {{ r.content }}
+                    </div>
+                {% endfor %}
 
-            {% if ns.current_key != entry_key %}
-                {% if not loop.first %}
+                {% if entry.attachments %}
+                    <div class="medical-line">
+                        <strong>Əlavələr:</strong>
+                        {% for attachment in entry.attachments %}
+                            <a href="/ui/attachments/{{ attachment.id }}" target="_blank">
+                                {{ attachment.original_filename }}
+                            </a>{% if not loop.last %}, {% endif %}
+                        {% endfor %}
                     </div>
                 {% endif %}
 
-                <div class="medical-box">
-                    <div class="medical-box-header">
-                        <strong>{{ r.author }}</strong>
-                        <span>{{ r.created_at }}</span>
+                {% if entry.can_edit %}
+                    <div class="medical-line record-actions">
+                        <a class="btn-edit" href="/ui/doctor/patients/{{ patient.id }}/records/{{ entry.record_group }}/edit">
+                            Düzəliş et
+                        </a>
+                        <form
+                            method="post"
+                            action="/ui/doctor/patients/{{ patient.id }}/records/{{ entry.record_group }}/delete"
+                            id="delete-record-form-{{ loop.index }}"
+                        >
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                            <button type="button" class="btn-danger" onclick="openConfirmModal('delete-record-modal-{{ loop.index }}')">
+                                Tibbi qeydi sil
+                            </button>
+                        </form>
+
+                        <div class="modal-backdrop modal-confirm" id="delete-record-modal-{{ loop.index }}">
+                            <div class="modal-box">
+                                <div class="modal-icon modal-icon-danger">!</div>
+                                <h3>Tibbi qeydi sil</h3>
+                                <p>Bu tibbi qeydi ve buna aid butun elaveleri bir defelik silmek istediyinize eminsin?</p>
+                                <div class="modal-actions">
+                                    <button type="button" class="btn-secondary" onclick="closeConfirmModal('delete-record-modal-{{ loop.index }}')">Geri qayıt</button>
+                                    <button type="submit" form="delete-record-form-{{ loop.index }}" class="btn-danger">Tibbi qeydi sil</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                {% set ns.current_key = entry_key %}
-            {% endif %}
-
-            <div class="medical-line" style="word-break:break-word; overflow-wrap:anywhere;">
-                <strong>{{ r.record_type|capitalize }}:</strong>
-                {{ r.content }}
+                {% endif %}
             </div>
-
-            {% if loop.last %}
-                </div>
-            {% endif %}
         {% endfor %}
     {% else %}
         <div class="muted">Heç bir qeyd yoxdur</div>
     {% endif %}
 </div>
+
+<script>
+function openConfirmModal(id) {
+    document.getElementById(id).style.display = 'flex';
+}
+
+function closeConfirmModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+</script>
+
 {% endblock %}

@@ -8,6 +8,7 @@
 </p>
 
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
 
     <label>Yeni həkim təyin et:<br>
         <select name="assigned_doctor_id">

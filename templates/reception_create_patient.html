@@ -2,130 +2,234 @@
 
 {% block content %}
 
-<h2>Yeni pasient əlavə et</h2>
+<div class="page-heading">
+    <h2>Yeni pasient</h2>
+    <p class="muted">Pasientin əsas məlumatlarını daxil edin və həkimə yönləndirin.</p>
+</div>
 
-<form method="post" action="/ui/reception/patients/create">
+<form method="post" action="/ui/reception/patients/create" class="patient-form" id="patient-create-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <input type="hidden" name="date_of_birth" id="date-of-birth">
+    <input type="hidden" name="first_registration_date" id="first-registration-date">
 
-    <div class="card">
-        <div class="card-title">Pasient haqqında məlumat</div>
+    <div class="form-panel">
+        <div class="form-panel-header">
+            <div>
+                <div class="form-panel-title">Şəxsi məlumatlar</div>
+                <div class="form-panel-subtitle">Pasientin kimlik və qeydiyyat məlumatları</div>
+            </div>
+        </div>
 
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Adı</div>
+        <div class="form-grid form-grid-wide">
+            <label class="field">
+                <span>Adı</span>
                 <input type="text" name="name" required>
-            </div>
+            </label>
 
-            <div class="info-item">
-                <div class="info-label">Soyadı</div>
+            <label class="field">
+                <span>Soyadı</span>
                 <input type="text" name="surname" required>
-            </div>
+            </label>
 
-            <div class="info-item">
-                <div class="info-label">Ata adı</div>
+            <label class="field">
+                <span>Ata adı</span>
                 <input type="text" name="father_name" required>
+            </label>
+
+            <div class="field">
+                <span>Doğum tarixi</span>
+                <div class="date-parts">
+                    <select id="birth-day" required aria-label="Gün">
+                        <option value="">Gün</option>
+                        {% for day in range(1, 32) %}
+                            <option value="{{ '%02d'|format(day) }}">{{ day }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="birth-month" required aria-label="Ay">
+                        <option value="">Ay</option>
+                        <option value="01">Yanvar</option>
+                        <option value="02">Fevral</option>
+                        <option value="03">Mart</option>
+                        <option value="04">Aprel</option>
+                        <option value="05">May</option>
+                        <option value="06">İyun</option>
+                        <option value="07">İyul</option>
+                        <option value="08">Avqust</option>
+                        <option value="09">Sentyabr</option>
+                        <option value="10">Oktyabr</option>
+                        <option value="11">Noyabr</option>
+                        <option value="12">Dekabr</option>
+                    </select>
+
+                    <select id="birth-year" required aria-label="İl">
+                        {% for year in range(current_year, 1899, -1) %}
+                            <option value="{{ year }}" {% if year == 1990 %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <div class="info-item">
-                <div class="info-label">Doğum tarixi</div>
-                <input type="date" name="date_of_birth" required>
-            </div>
-
-            <div class="info-item">
-                <div class="info-label">Cinsi</div>
+            <label class="field">
+                <span>Cinsi</span>
                 <select name="gender" required>
                     <option value="male">Kişi</option>
                     <option value="female">Qadın</option>
                 </select>
-            </div>
+            </label>
 
-            <div class="info-item">
-                <div class="info-label">Status</div>
+            <label class="field">
+                <span>Status</span>
                 <select name="status">
                     <option value="Yeni">Yeni</option>
                     <option value="Təkrar müayinə">Təkrar müayinə</option>
                 </select>
-            </div>
-            <div class="info-item">
-                <div class="info-label">İlk qeydiyyat tarixi</div>
+            </label>
 
-                <input
-                    type="date"
-                    name="first_registration_date"
-                    value="{{ today }}"
-                    required
-                >
-            </div>
-        </div>
-    </div>
+            <div class="field">
+                <span>İlk qeydiyyat tarixi</span>
+                <div class="date-parts">
+                    <select id="registration-day" required aria-label="Qeydiyyat günü">
+                        {% for day in range(1, 32) %}
+                            <option value="{{ '%02d'|format(day) }}" {% if '%02d'|format(day) == today_day %}selected{% endif %}>{{ day }}</option>
+                        {% endfor %}
+                    </select>
 
-    <div class="card">
-        <div class="card-title">Əlaqə məlumatları</div>
+                    <select id="registration-month" required aria-label="Qeydiyyat ayı">
+                        <option value="01" {% if today_month == "01" %}selected{% endif %}>Yanvar</option>
+                        <option value="02" {% if today_month == "02" %}selected{% endif %}>Fevral</option>
+                        <option value="03" {% if today_month == "03" %}selected{% endif %}>Mart</option>
+                        <option value="04" {% if today_month == "04" %}selected{% endif %}>Aprel</option>
+                        <option value="05" {% if today_month == "05" %}selected{% endif %}>May</option>
+                        <option value="06" {% if today_month == "06" %}selected{% endif %}>İyun</option>
+                        <option value="07" {% if today_month == "07" %}selected{% endif %}>İyul</option>
+                        <option value="08" {% if today_month == "08" %}selected{% endif %}>Avqust</option>
+                        <option value="09" {% if today_month == "09" %}selected{% endif %}>Sentyabr</option>
+                        <option value="10" {% if today_month == "10" %}selected{% endif %}>Oktyabr</option>
+                        <option value="11" {% if today_month == "11" %}selected{% endif %}>Noyabr</option>
+                        <option value="12" {% if today_month == "12" %}selected{% endif %}>Dekabr</option>
+                    </select>
 
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Bölgə</div>
-                <input type="text" name="region" required>
-            </div>
-
-            <div class="info-item">
-                <div class="info-label">Telefon</div>
-                <input type="text" name="phone" required>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Həkimi təyin et</div>
-
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Təyin edilmiş həkim</div>
-                <select name="assigned_doctor_id" required>
-                    {% for d in doctors %}
-                        <option value="{{ d.id }}">{{ d.full_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- <div class="info-item">
-                 <div class="info-label">Assigned Examination</div> 
-                <select name="assigned_examination">
-                    <option value="">None</option>
-                    <option value="EEG">EEG</option>
-                    <option value="EMG">EMG</option>
-                </select>
-            </div> -->
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Haqqımızda hardan məlumat almısınız?</div>
-
-        <div class="info-grid">
-            <div class="info-item">
-                <!-- <div class="info-label">Source</div> -->
-                <select name="source">
-                    <option value="">Qeyd edilməyib</option>
-                    <option value="Tanışlardan">Tanışlardan</option>
-                    <option value="Həkim yönəldib">Həkim yönəldib</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="Youtube">Youtube</option>
-                    <option value="TV reklam">TV reklam</option>
-                    <option value="Digər">Digər</option>
-                </select>
-            </div>
-
-            <div class="info-item" style="margin-top:-14px;">
-                <div class="info-label">Əlavə məlumat (ehtiyyac olarsa)</div>
-                <input type="text" name="source_details" placeholder="Optional note">
+                    <select id="registration-year" required aria-label="Qeydiyyat ili">
+                        {% for year in range(current_year, 1899, -1) %}
+                            <option value="{{ year }}" {% if year == today_year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card">
+    <div class="form-panel-grid">
+        <div class="form-panel">
+            <div class="form-panel-header">
+                <div>
+                    <div class="form-panel-title">Əlaqə məlumatları</div>
+                    <div class="form-panel-subtitle">Pasientlə əlaqə üçün məlumatlar</div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <label class="field">
+                    <span>Bölgə</span>
+                    <input type="text" name="region" required>
+                </label>
+
+                <label class="field">
+                    <span>Telefon</span>
+                    <input type="text" name="phone" required>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-panel-header">
+                <div>
+                    <div class="form-panel-title">Yönləndirmə</div>
+                    <div class="form-panel-subtitle">Pasienti qəbul edəcək həkimi seçin</div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <label class="field">
+                    <span>Təyin edilmiş həkim</span>
+                    <select name="assigned_doctor_id" required>
+                        {% for d in doctors %}
+                            <option value="{{ d.id }}">{{ d.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-panel-header">
+                <div>
+                    <div class="form-panel-title">Mənbə</div>
+                    <div class="form-panel-subtitle">Pasient klinika haqqında haradan məlumat alıb?</div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <label class="field">
+                    <span>Mənbə</span>
+                    <select name="source">
+                        <option value="">Qeyd edilməyib</option>
+                        <option value="Tanışlardan">Tanışlardan</option>
+                        <option value="Həkim yönəldib">Həkim yönəldib</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Youtube">Youtube</option>
+                        <option value="TV reklam">TV reklam</option>
+                        <option value="Digər">Digər</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Əlavə məlumat</span>
+                    <input type="text" name="source_details" placeholder="Ehtiyac olarsa qeyd edin">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="/ui/reception/patients" class="btn-secondary">Ləğv et</a>
         <button type="submit">Yadda saxla</button>
     </div>
-
 </form>
+
+<script>
+function composeDate(prefix) {
+    var day = document.getElementById(prefix + '-day').value;
+    var month = document.getElementById(prefix + '-month').value;
+    var year = document.getElementById(prefix + '-year').value;
+    var parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    var isValid = parsed.getFullYear() === Number(year)
+        && parsed.getMonth() === Number(month) - 1
+        && parsed.getDate() === Number(day);
+
+    return isValid ? year + '-' + month + '-' + day : '';
+}
+
+document.getElementById('patient-create-form').addEventListener('submit', function(event) {
+    var birthDate = composeDate('birth');
+    var registrationDate = composeDate('registration');
+
+    if (!birthDate) {
+        event.preventDefault();
+        alert('Doğum tarixini düzgün daxil edin.');
+        return;
+    }
+
+    if (!registrationDate) {
+        event.preventDefault();
+        alert('İlk qeydiyyat tarixini düzgün daxil edin.');
+        return;
+    }
+
+    document.getElementById('date-of-birth').value = birthDate;
+    document.getElementById('first-registration-date').value = registrationDate;
+});
+</script>
 
 {% endblock %}

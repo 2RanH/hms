@@ -5,6 +5,7 @@
 <h2>Pasientin məlumatlarına düzəliş et</h2>
 
 <form method="post" action="/ui/reception/patients/{{ patient.id }}/edit">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
 
     <div class="card">
         <div class="card-title">Pasient haqqında məlumat</div>
@@ -34,9 +35,9 @@
                 <div class="info-label">Bölgə</div>
                 <input type="text" name="region" value="{{ patient.region }}" required>
             </div>
+
             <div class="info-item">
                 <div class="info-label">Doğum tarixi</div>
-
                 <input
                     type="date"
                     name="date_of_birth"
@@ -44,28 +45,13 @@
                     required
                 >
             </div>
-
         </div>
     </div>
 
-    <div class="card">
+    <div class="card form-actions">
         <button type="submit">Dəyişiklikləri yadda saxla</button>
-        &nbsp;
-        <a
-            href="/ui/reception/patients"
-            style="
-                background:#777;
-                color:white;
-                padding:8px 14px;
-                border-radius:8px;
-                text-decoration:none;
-                display:inline-block;
-            "
-        >
-            Ləğv et
-        </a>
+        <a href="/ui/reception/patients" class="btn-secondary">Ləğv et</a>
     </div>
-
 </form>
 
 {% endblock %}

@@ -1,5 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Doctor Dashboard</h2>
-<p>Welcome, {{ user.username }}</p>
+<div class="dashboard-hero">
+    <p class="welcome-text">Xoş gəlmisiniz, {{ user.full_name or user.username }}</p>
+</div>
+
+<div class="clinic-hero">
+    <img class="clinic-logo" src="/static/css/clinic-logo.png" alt="RH Nevrologiya Klinikası">
+    <div class="clinic-name">Professor Rövşən Həsənovun Nevrologiya Klinikası</div>
+</div>
+
+<div class="dashboard-actions">
+    <a class="dashboard-action" href="/ui/doctor/patients">
+        <div class="dashboard-action-title">Mənim pasientlərim</div>
+        <div class="dashboard-action-text">Son 5 gün üzrə sizə yönləndirilən pasientlərə baxın.</div>
+    </a>
+
+    <a class="dashboard-action" href="/ui/reception/patients">
+        <div class="dashboard-action-title">Bütün pasientlər</div>
+        <div class="dashboard-action-text">Pasient axtarışı edin və tibbi karta keçid edin.</div>
+    </a>
+
+    <a class="dashboard-action" href="/ui/doctor/notifications">
+        <div class="dashboard-action-title">Bildirişlər</div>
+        <div class="dashboard-action-text">Sizə göndərilən yeni pasient və yönləndirmələri yoxlayın.</div>
+    </a>
+
+    <a class="dashboard-action" href="/ui/reception/patients/create">
+        <div class="dashboard-action-title">Yeni pasient</div>
+        <div class="dashboard-action-text">Lazım olduqda yeni pasient qeydiyyatı yaradın.</div>
+    </a>
+</div>
 {% endblock %}

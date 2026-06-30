@@ -8,6 +8,7 @@
     <div class="card-title">Həkimi dəyiş</div>
 
     <form method="post" action="/ui/doctor/patients/{{ patient.id }}/reassign">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
         
         <div style="margin-bottom: 14px;">
             <label>Yeni həkim</label>

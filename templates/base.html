@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>HSM</title>
     <link rel="stylesheet" href="/static/css/base.css">
 </head>
@@ -8,73 +9,56 @@
 <body>
 
     {% if user %}
-    <div class="header">
-
-        <div class="header-title">
-            Healthcare Service Management
+    {% set path = request.url.path %}
+    <header class="app-header">
+        <div class="brand-block">
+            <a href="{% if user.role == 'admin' %}/admin{% elif user.role == 'reception' %}/reception{% else %}/doctor{% endif %}" class="brand-title">
+                HSM
+            </a>
+            <div class="brand-subtitle">
+                {% if user.role == "admin" %}
+                    Admin paneli
+                {% elif user.role == "reception" %}
+                    Qeydiyyat paneli
+                {% else %}
+                    Həkim paneli
+                {% endif %}
+            </div>
         </div>
 
-        <div class="nav">
-
-            {% if user.role == "reception" %}
-                <a href="/reception">Baş səhifə</a>
-                <a href="/ui/reception/patients">Pasientlər</a>
-                <a href="/ui/reception/patients/create">Yeni pasienti əlavə et</a>
-                <a href="/ui/reception/costs">Xərclər</a>
-                <a href="/profile">Profil</a>
-            {% endif %}
-
+        <nav class="nav-main">
             {% if user.role == "admin" %}
-                <a href="/admin">Dashboard</a>
-                <a href="/ui/admin/users">Users</a>
-                <a href="/ui/admin/payments">Payments</a>
-                <a href="/ui/admin/audit-logs">Audit Logs</a>
-                <a href="/ui/admin/patients">Patients</a>
-            {% endif %}
-
-            {% if user.role == "doctor" %}
-                <a href="/doctor">Baş səhifə</a>
-
-                <a href="/ui/doctor/patients">
-                    Mənim pasientlərim
-                </a>
-                <a href="/ui/reception/patients">
-                    Bütün pasientlər
-                </a>
+                <a class="nav-link {% if path == '/admin' %}active{% endif %}" href="/admin">Baş səhifə</a>
+                <a class="nav-link {% if path.startswith('/ui/admin/patients') %}active{% endif %}" href="/ui/admin/patients">Pasientlər</a>
+                <a class="nav-link {% if path.startswith('/ui/admin/payments') %}active{% endif %}" href="/ui/admin/payments">Maliyyə</a>
+                <a class="nav-link {% if path.startswith('/ui/admin/users') %}active{% endif %}" href="/ui/admin/users">İstifadəçilər</a>
+                <a class="nav-link {% if path.startswith('/ui/admin/audit-logs') %}active{% endif %}" href="/ui/admin/audit-logs">Audit</a>
+            {% elif user.role == "reception" %}
+                <a class="nav-link {% if path == '/reception' %}active{% endif %}" href="/reception">Baş səhifə</a>
+                <a class="nav-link {% if path.startswith('/ui/reception/patients') and not path.endswith('/create') %}active{% endif %}" href="/ui/reception/patients">Pasientlər</a>
+                <a class="nav-link {% if path == '/ui/reception/patients/create' %}active{% endif %}" href="/ui/reception/patients/create">Yeni pasient</a>
+                <a class="nav-link {% if path.startswith('/ui/reception/costs') %}active{% endif %}" href="/ui/reception/costs">Xərclər</a>
+            {% elif user.role == "doctor" %}
+                <a class="nav-link {% if path == '/doctor' %}active{% endif %}" href="/doctor">Baş səhifə</a>
+                <a class="nav-link {% if path.startswith('/ui/doctor/patients') %}active{% endif %}" href="/ui/doctor/patients">Mənim pasientlərim</a>
+                <a class="nav-link {% if path.startswith('/ui/reception/patients') and not path.endswith('/create') %}active{% endif %}" href="/ui/reception/patients">Bütün pasientlər</a>
+                <a class="nav-link {% if path == '/ui/reception/patients/create' %}active{% endif %}" href="/ui/reception/patients/create">Yeni pasient</a>
 
                 {% set notif = inject_notification_count(request) %}
-
-                <a href="/ui/doctor/notifications" style="position:relative;">
+                <a class="nav-link notif-link {% if path.startswith('/ui/doctor/notifications') %}active{% endif %}" href="/ui/doctor/notifications">
                     Bildirişlər
-
                     {% if notif.unread_notifications > 0 %}
-                        <span style="
-                            background:#e53935;
-                            color:white;
-                            border-radius:50%;
-                            padding:2px 7px;
-                            font-size:12px;
-                            margin-left:5px;
-                            font-weight:bold;
-                        ">
-                            {{ notif.unread_notifications }}
-                        </span>
+                        <span class="notif-badge">{{ notif.unread_notifications }}</span>
                     {% endif %}
                 </a>
-
-                <a href="/profile">
-                    Profil
-                </a>
-
-                <a href="/ui/reception/patients/create">
-                    Yeni pasient əlavə et
-                </a>
             {% endif %}
+        </nav>
 
-            <a href="/logout">Sistemdən çıxış</a>
-
+        <div class="nav-account">
+            <a class="nav-link {% if path == '/profile' %}active{% endif %}" href="/profile">Profil</a>
+            <a class="nav-link logout-link" href="/logout">Çıxış</a>
         </div>
-    </div>
+    </header>
     {% endif %}
 
     <div class="container">

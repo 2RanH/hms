@@ -40,6 +40,7 @@
 </div>
 
 <form method="post" action="/profile">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
 
     <div class="card">
         <div class="card-title">Şifrəni dəyiş</div>

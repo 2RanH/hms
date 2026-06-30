@@ -5,6 +5,7 @@
 <h2>Create New User</h2>
 
 <form method="post" action="/admin/users/create">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
 
     <div class="card">
         <div class="card-title">User Information</div>

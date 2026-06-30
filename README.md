@@ -103,8 +103,41 @@ On server:
 ```
 cd /root/hms
 git pull
+pip install -r requirements.txt
+python db/migrate.py
 pm2 restart all
 ```
+
+`db/migrate.py` is safe to run repeatedly. It only creates missing tables and adds missing columns, so existing production records are preserved.
+
+### Production security environment
+
+Create or edit the production environment file:
+
+```
+cd /root/hms
+nano .env
+```
+
+Add:
+
+```
+HSM_COOKIE_SECURE=true
+HSM_ENABLE_HSTS=true
+HSM_SESSION_DAYS=1
+HSM_LOGIN_MAX_ATTEMPTS=5
+HSM_LOGIN_WINDOW_SECONDS=900
+HSM_MAX_ATTACHMENT_MB=10
+HSM_MAX_ATTACHMENTS_PER_RECORD=10
+```
+
+Then restart the app:
+
+```
+pm2 restart all --update-env
+```
+
+`HSM_COOKIE_SECURE=true` requires HTTPS. Keep it enabled on DigitalOcean production. For local HTTP testing, leave it unset or set it to `false`.
 
 ---
 

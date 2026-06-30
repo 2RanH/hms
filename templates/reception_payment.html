@@ -2,7 +2,32 @@
 
 {% block content %}
 
-<h2>Ödənişi qeyd et</h2>
+{% if request.query_params.get("success") %}
+<div class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-icon">✓</div>
+        <h3>Ödəniş qeyd edildi!</h3>
+        <p>{{ request.query_params.get("amount") }} AZN · {{ request.query_params.get("type") }}</p>
+        <button onclick="window.location.href='/ui/reception/patients/{{ patient.id }}/payments'">OK</button>
+    </div>
+</div>
+{% endif %}
+
+{% if request.query_params.get("payment_deleted") %}
+<div class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-icon">✓</div>
+        <h3>Ödəniş silindi!</h3>
+        <p>Ödəniş tarixçədən silindi.</p>
+        <button onclick="window.location.href='/ui/reception/patients/{{ patient.id }}/payments'">OK</button>
+    </div>
+</div>
+{% endif %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="margin:0;">Ödənişi qeyd et</h2>
+    <a href="/ui/reception/patients" class="btn-secondary">Geri qayıt</a>
+</div>
 
 <div class="card">
     <div class="card-title">Pasientin adı və soyadı</div>
@@ -13,13 +38,15 @@
     <div class="card-title">Ödəniş haqqında məlumat</div>
 
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">Ödəniş növü</div>
                 <select name="payment_type" required>
-                    <option value="consultation">Konsultasiya</option>
+                    <option value="konsultasiya">Konsultasiya</option>
                     <option value="EEG">EEG</option>
                     <option value="EMG">EMG</option>
+                    <option value="USD">USD</option>
                 </select>
             </div>
 
@@ -52,21 +79,29 @@
                         method="post"
                         action="/ui/reception/payments/{{ p.id }}/delete"
                         style="display:inline;"
-                        onsubmit="return confirm('Ödənişi silmək istədiyinizə əminsiniz?');"
+                        id="delete-payment-form-{{ p.id }}"
                     >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
                         <button
-                            type="submit"
-                            style="
-                                background:none;
-                                border:none;
-                                color:#c0392b;
-                                cursor:pointer;
-                                margin-left:10px;
-                            "
+                            type="button"
+                            onclick="openConfirmModal('delete-payment-modal-{{ p.id }}')"
+                            style="background:none; border:none; color:#c0392b; cursor:pointer; margin-left:10px;"
                         >
                             Sil
                         </button>
                     </form>
+
+                    <div class="modal-backdrop modal-confirm" id="delete-payment-modal-{{ p.id }}">
+                        <div class="modal-box">
+                            <div class="modal-icon modal-icon-danger">!</div>
+                            <h3>Ödənişi sil</h3>
+                            <p>Bu ödənişi silmək istədiyinizə əminsiniz?</p>
+                            <div class="modal-actions">
+                                <button type="button" class="btn-secondary" onclick="closeConfirmModal('delete-payment-modal-{{ p.id }}')">Geri qayıt</button>
+                                <button type="submit" form="delete-payment-form-{{ p.id }}" class="btn-danger">Sil</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -75,11 +110,14 @@
     {% endif %}
 </div>
 
-{% if request.query_params.get("success") %}
-<div class="card" style="border-left:4px solid #1fa84a;">
-    <strong>Ödəniş qeyd edildi:</strong><br>
-    {{ request.query_params.get("amount") }} AZN — {{ request.query_params.get("type") }}
-</div>
-{% endif %}
+<script>
+function openConfirmModal(id) {
+    document.getElementById(id).style.display = 'flex';
+}
+
+function closeConfirmModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+</script>
 
 {% endblock %}

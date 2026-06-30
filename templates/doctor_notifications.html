@@ -2,26 +2,41 @@
 
 {% block content %}
 
-<h2>Notifications</h2>
+<h2>Bildirişlər</h2>
 
 <div class="card">
     <div class="card-title">Son bildirişlər</div>
 
     {% if notifications %}
         {% for n in notifications %}
-            <div class="medical-box">
-                <div class="medical-box-header">
-                    <strong>Bildirişlər</strong>
-                    <span>{{ n.created_at }}</span>
-                </div>
+            {% if n.patient_id %}
+                <a class="notification-card" href="/ui/doctor/patients/{{ n.patient_id }}">
+                    <div class="medical-box">
+                        <div class="medical-box-header">
+                            <strong>Bildiriş</strong>
+                            <span>{{ n.created_at }}</span>
+                        </div>
 
-                <div class="medical-line">
-                    {{ n.message }}
+                        <div class="medical-line">
+                            {{ n.message }}
+                        </div>
+                    </div>
+                </a>
+            {% else %}
+                <div class="medical-box">
+                    <div class="medical-box-header">
+                        <strong>Bildiriş</strong>
+                        <span>{{ n.created_at }}</span>
+                    </div>
+
+                    <div class="medical-line">
+                        {{ n.message }}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
         {% endfor %}
     {% else %}
-        <div class="muted"> Bildiriş yoxdur.</div>
+        <div class="muted">Bildiriş yoxdur.</div>
     {% endif %}
 </div>
 

@@ -2,13 +2,22 @@
 
 {% block content %}
 
-<h2>Patient Profile</h2>
+{% if request.query_params.get("updated") %}
+<div class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-icon">✓</div>
+        <h3>Uğurla yeniləndi!</h3>
+        <p>Pasient kartındakı məlumatlar yadda saxlanıldı.</p>
+        <button onclick="window.location.href='/ui/reception/patients/{{ patient.id }}/profile'">OK</button>
+    </div>
+</div>
+{% endif %}
+
+<h2>Pasient kartı</h2>
 
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
 
-    <!-- ========================= -->
-    <!-- Patient Information -->
-    <!-- ========================= -->
     <div class="card">
         <div class="card-title">Pasient haqqında məlumat</div>
 
@@ -34,11 +43,10 @@
             </div>
 
             <div class="info-item">
-                <div class="info-label">Region</div>
+                <div class="info-label">Bölgə</div>
                 <div class="info-value">{{ patient.region }}</div>
             </div>
 
-            <!-- Status (editable by reception) -->
             <div class="info-item">
                 <div class="info-label">Status</div>
                 <select name="status">
@@ -52,47 +60,22 @@
             </div>
         </div>
     </div>
+
     <div class="card" style="text-align: right;">
-
-        <button type="submit">
-            Dəyişiklikləri yadda saxla
-        </button>
-
+        <button type="submit">Dəyişiklikləri yadda saxla</button>
         &nbsp;
-
         <a href="/ui/reception/patients/{{ patient.id }}/edit">
-            <button
-                type="button"
-                style="
-                    background:#f4b400;
-                    color:white;
-                "
-            >
-                Düzəliş et
-            </button>
+            <button type="button" style="background:#f4b400; color:white;">Düzəliş et</button>
         </a>
-
         &nbsp;
-
         <a href="/ui/reception/patients">
-            <button
-                type="button"
-                style="background:#777;"
-            >
-                Geri qayıt
-            </button>
+            <button type="button" style="background:#777;">Geri qayıt</button>
         </a>
-
     </div>
-    
-    <!-- ========================= -->
-    <!-- Notes + Payments (Parallel Layout) -->
-    <!-- ========================= -->
-    <div class="info-grid">
 
-        <!-- Payments (LEFT, read-only) -->
+    <div class="info-grid">
         <div class="card">
-            <div class="card-title">Payments</div>
+            <div class="card-title">Ödənişlər</div>
 
             {% if payments %}
                 {% for p in payments %}
@@ -107,32 +90,15 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="muted">No payments yet.</div>
+                <div class="muted">Ödəniş yoxdur.</div>
             {% endif %}
         </div>
 
-        <!-- Notes (RIGHT, editable) -->
         <div class="card">
-            <div class="card-title">Administrative Notes</div>
-
+            <div class="card-title">Administrativ qeydlər</div>
             <textarea name="notes" style="min-height:160px;">{{ patient.notes }}</textarea>
         </div>
-
     </div>
-
-    <!-- ========================= -->
-    <!-- Actions -->
-    <!-- ========================= -->
-    <!-- <div class="card">
-        <button type="submit">Save Changes</button>
-        &nbsp;
-        <a href="/ui/reception/patients">
-            <button type="button" style="background:#777;">
-                Back
-            </button>
-        </a>
-    </div> -->
-
 </form>
 
 {% endblock %}
